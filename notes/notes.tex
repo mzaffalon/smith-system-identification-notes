@@ -1,0 +1,53 @@
+% Intended LaTeX compiler: pdflatex
+\documentclass[11pt]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+% \usepackage[normalem]{ulem}
+\usepackage{amsmath}
+% \usepackage{mathtools}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{biblatex}
+
+\date{\today\\\vspace*{2em}\emph{Unreviewed} notes for Prof. Smith's class. Use at own risk!}
+\title{227-0689-00L: System Identification HS2023}
+\author{Michele Zaffalon\\Bruker BioSpin AG}
+
+\hypersetup{
+  pdfauthor={Michele Zaffalon},
+  pdftitle={System Identification},
+  pdfkeywords={},
+  pdfsubject={},
+  pdfcreator={Emacs 29.1 (Org mode 9.6.6)},
+  pdflang={English}}
+
+\newcommand{\du}{\ensuremath{\mathrm{d}}}
+% \newcommand{\bs}[1]{\boldsymbol{#1}}
+% \newcommand{\bsrm}[1]{\boldsymbol{\mathrm{#1}}}
+\newcommand{\cov}{\textrm{cov}}
+\newcommand{\rank}{\textrm{rank}}
+
+\addbibresource{notes.bib}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+% \include{stats}
+\include{LS}
+%\include{freq-domain}
+%\include{time-domain}
+%\include{PEM}
+%\include{regularization}
+%\include{exercises.tex}
+
+\printbibliography
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

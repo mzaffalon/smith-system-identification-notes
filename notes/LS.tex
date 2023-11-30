@@ -1,0 +1,107 @@
+\chapter{Least-Squares Estimation}
+\label{sec:LS-estimation}
+
+Consider a model
+\begin{equation}
+  \label{eq:LTI-with-noise}
+  Y = \Phi\theta_0 + \epsilon
+\end{equation}
+where $Y = \begin{bmatrix}
+  y_0 & \ldots && y_{N-1}
+\end{bmatrix}^\top$ is typically a vector containing the measurements $\{y_0,\ldots, y_{N-1}\}$, $\theta\in\mathbb{R}^p$ is the unknown parameter to be estimated, $\Phi\in \mathbb{R}^{N\times p}$ is called the regressor.
+The noise vector $\epsilon =
+\begin{bmatrix}
+  v_0 & \ldots & v_{N-1}
+\end{bmatrix}^\top$ has zero mean $E\{\epsilon\}=0$ and covariance $E\{\epsilon \epsilon^\top\}=R$, a symmetric positive definite matrix.
+
+The maximum likelihood probability\footnote{What is the average value of eq.~\eqref{eq:LS-problem}?
+  I expect this to be equal to $N$.
+  At least this is what happens with a diagonal noise covariance matrix.} requires us to minimize
+\begin{equation}
+  \label{eq:LS-problem}
+  (Y - \Phi \theta)^\top R^{-1} (Y - \Phi \theta) = ||C (Y - \Phi \theta)||_2^2
+\end{equation}
+where $C$ is the Cholesky decomposition of the symmetric positive definite matrix $C^\top C = R^{-1}$.
+
+The minimum of eq.~\eqref{eq:LS-problem} is found by setting the gradient of the expression with respect to $\theta$ to zero, which gives the equation
+\begin{equation*}
+  \left(\Phi^\top R^{-1}\Phi\right)^{-1} \hat{\theta}_\text{ML} = \Phi^\top R^{-1}Y.
+\end{equation*}
+This is called the normal equation.
+The \emph{mathematical} solution is given by
+\begin{equation}
+  \label{eq:LS-estimator}
+  \hat{\theta}_\text{ML} = \left(\Phi^\top R^{-1}\Phi\right)^{-1} \Phi^\top R^{-1}Y
+\end{equation}
+and it exists provided that $C\Phi$ has full rank\footnote{The usual warning holds for the rank. Instead we want to have the matrix $C\Phi$ with the smallest condition number for the estimate to be numerically stable, which is a stronger condition than full rank, to uniquely determine the best estimate $\hat{\theta}_\text{ML}$.}: $\rank(C\Phi) = p$. When this is the case, the system is said to be \emph{persistently excited}, see Sect.. Given the freedom to choose $\Phi$, one must select it such that $C\Phi$ is persistently excited.
+
+\emph{Numerically} one should not form the normal equation directly because it squares the condition number of $C\Phi$ and rely either on the QR decomposition or on the SVD to solve eq.~\eqref{eq:LS-problem}.
+This is taken care automatically by MATLAB when using the backslash $\backslash$ operator
+\begin{equation}
+  \label{eq:LS-numerical-solution}
+  \hat{\theta}_\text{ML} = (C\Phi) \backslash (CY).
+\end{equation}
+From this, it is clear that the quantities that matter are $C\Phi$ and $CY$.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Bias and Covariance of the Least-Squares Estimation}
+\label{sec:bias-variance-LS-estimation}
+
+The linear estimator eq.~\eqref{eq:LS-estimator} is unbiased.
+To see why,
+\begin{equation*}
+  \hat{\theta}_\text{ML} = \left(\Phi^\top R^{-1} \Phi\right)^{-1} \Phi^\top R^{-1}(\Phi\theta_0 + \epsilon) = \theta_0 + \left(\Phi^\top R^{-1} \Phi\right)^{-1} \Phi^\top R^{-1}\epsilon
+\end{equation*}
+using eq.~\eqref{eq:LTI-with-noise} into eq.~\eqref{eq:LS-estimator}, and
+\begin{equation*}
+  E\{\hat{\theta}_\text{ML}\} = \theta_0.
+\end{equation*}
+The covariance\footnote{Recalling that $R=R^\top$, $\left(\Phi^\top R^{-1} \Phi\right)^\top = \Phi^\top R^{-1} \Phi$, we have
+  \begin{align*} \cov\{\hat{\theta}_\text{ML}\} &= E\left\{(\hat{\theta}_\text{ML}-\theta_0) (\hat{\theta}_\text{ML}-\theta_0)^\top\right\} \\
+                                                &= E\left\{\left(\left(\Phi^\top R^{-1} \Phi\right)^{-1} \Phi^\top R^{-1}\epsilon\right)\left(\left(\Phi^\top R^{-1} \Phi\right)^{-1} \Phi^\top R^{-1}\epsilon\right)^\top\right\} \\
+                                                &= E\left\{\left(\Phi^\top R^{-1} \Phi\right)^{-1} \Phi^\top R^{-1}\epsilon \epsilon^\top R^{-1}\Phi \left(\Phi^\top R^{-1} \Phi\right)^{-1}\right\} \\
+                                                &= \left(\Phi^\top R^{-1} \Phi\right)^{-1} \Phi^\top R^{-1}E\left\{\epsilon \epsilon^\top\right\} R^{-1} \Phi \left(\Phi^\top R^{-1} \Phi\right)^{-1} \\
+                                                &= \left(\Phi^\top R^{-1}\Phi\right)^{-1}.
+  \end{align*}
+} is\footnote{Is there a way to understand the form of covariance matrix without going through the calculation?}
+\begin{equation*}
+  \cov\{\hat{\theta}_\text{ML}\} = \left(\Phi^\top R^{-1}\Phi\right)^{-1}.
+\end{equation*}
+Note that \emph{only} in the case $R=\sigma^2I$ (diagonal matrix with all elements equal) the covariance reduces to $\sigma^{-2}$.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Geometric Interpretation of Least-Squares}
+
+The least squares problem
+\begin{equation*}
+  ||b - Ax||_2
+\end{equation*}
+has the following geometric interpretation: the solution is that for which the residuals $v \doteq b - Ax$ are outside (\text{i.e.} orthogonal) of the space spanned by $A$.
+In other words, we require\footnote{I believe the proof given in class is not correct: to span the full column space of $A$, one has to multiply by a generic vector $z$; in class $z=x$ was taken.} the scalar product $\langle Az, v\rangle$ to be zero for all $z$:
+\begin{align*}
+  0 &= \langle Az, v\rangle = (Az)^\top(b-Ax) = z^\top \left(A^\top b - A^\top Ax\right)\hspace{2em}\forall z \\
+    &\rightarrow A^\top Ax = A^\top b
+\end{align*}
+which is the normal equation.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Random: The Covariance Matrix and the Choice of the Measurement Points}
+\label{question-covariance}
+
+\begin{itemize}
+\item The \emph{off-diagonal} elements of the covariance matrix $\cov(\theta)$ represent the correlations between the errors of the variables $\theta$.
+It is therefore not justified to discard them and take $\theta$'s standard deviations as the square root of $\cov(\theta)$'s diagonal elements because one discards the correlations: the ball of probability is in general an ellipse with the axes not parallel to the variable directions.
+
+\item Given the freedom to choose the measurement points, is there a ``best'' way of placing them?
+
+  There are two factors that determine the covariance matrix: the choice of basis and the choice of points.
+  The choice of basis is determined by the variables that one wants to extract: a linear transformation between one basis and the other will also transform the covariance matrix and the only concern may be the numerical stability (although one should expect that the measurement errors dominate).
+
+  Determining the position of the measurement points by minimizing one (or more elements of the covariance) is in general a non-convex problem. However this is done.
+\end{itemize}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "notes"
+%%% End:
