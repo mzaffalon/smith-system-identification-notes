@@ -1,0 +1,193 @@
+\chapter{Regularized FIR Models}
+\label{chap:regularised-FIR-models}
+
+We have seen that the solution $\thetaLS$ of the least squares problem eq.~\eqref{eq:LS-problem}
+\begin{equation*}
+  \arg\min_\theta ||y-\Phi \theta||_2^2
+\end{equation*}
+is unbiased, see Sect.~\ref{sec:bias-variance-MSE-LS-estimation}.
+
+We can however choose to have a biased estimate to reduce the mean square error
+\begin{equation*}
+  \MSE{\hat{\theta}} = E{||\hat{\theta}-\theta_0||_2^2}.
+\end{equation*}
+This can be achieved if we modify the minimization problem by adding a regularization term
+\begin{equation}
+  \label{eq:regularized-LS}
+  ||Y-\Phi \theta||_2^2 + \gamma \theta^\top P^{-1}\theta
+\end{equation}
+where $\gamma P^{-1}$ is a positive definite matrix. $P$ is called the \emph{kernel} or the regularization matrix\footnote{Wwhen $P=\mathbb{I}_N$ the technique is called ridge regression, otherwise it goes under the name of Tikhonov regularization.}.
+
+Regularization prevents overfitting, reduces the sensitivity to noise and can improve the estimate by a proper choice of the kernel (\textit{e.g.} for instance if the system is known to be stable, this information can be used to improve the estimation.)
+
+% The model contains also a truncation error
+%How to choose $\taumax$
+%The original argument to introduce a regularization term~\cite{pillonetto} is that a good estimator $\hat{\theta}$ should also be a good estimator of the Euclidean norm of $\theta_0$ but for the LS estimator, we have
+%\begin{equation*}
+%  ||\hat{\theta}||_2^2 = ||\theta_0||_2^2 + N\sigma^2
+%\end{equation*}
+%``the least squares estimator overestimates $||\theta||$. It seems desirable''
+
+The closed form mathematical solution to eq.~\eqref{eq:regularized-LS} is given by
+\begin{equation}
+  \label{eq:regularized-LS-solution}
+  \thetaR = \left(\Phi^\top\Phi + \gamma P^{-1}\right)^{-1}\Phi^\top Y.
+\end{equation}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{The James-Stein Estimator}
+\label{sec:james-stein-estimator}
+
+The James-Stein estimator was the first biased estimator that had a smaller MSE compared to least squares on all the ~\cite[page~3]{pillonetto}. It can be cast into a ridge regression problem
+\begin{equation*}
+  ||Y-\theta||^2 + \gamma ||\theta||^2,\hspace{2em} \gamma = \frac{(N-2)\sigma^2}{||Y||^2 - (N-2)\sigma^2}
+\end{equation*}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Bias, Covariance and MSE of the Regularized Least Squares Estimation}
+\label{sec:bias-covariance-MSE-regLS-estimation}
+
+We assume uncorrelated noise\footnote{In Sect.~\ref{chap:LS-estimation} we considered the more general case of correlated noise $\EE{\epsilon \epsilon^\top} = R$.} with constant variance $\sigma^2$: $\EE{\epsilon \epsilon^\top} = \sigma^2I_N$.
+
+The estimate eq.~\eqref{eq:regularized-LS-solution} has bias, covariance\footnote{Let $K = \left(\Phi^\top\Phi + \gamma P^{-1}\right)^{-1}$ so that $\thetaR = K\Phi^\top Y$. Plugging $Y=\Phi\theta_0+\epsilon$, we have
+  \begin{equation*}
+    \thetaR - \EE{\thetaR} = K\Phi^\top\epsilon
+  \end{equation*}
+  and
+  \begin{equation*}
+    \cov{\thetaR} = \EE{\left(K\Phi^\top\epsilon\right) \left(K\Phi^\top\epsilon\right)^\top} = K\Phi^\top \EE{\epsilon\epsilon^\top} \Phi K = \sigma^2 K\Phi^\top\Phi K.
+  \end{equation*}} and MSE
+\begin{align*}
+  \Bias{\thetaR} &= -\left(\Phi^\top\Phi + \gamma P^{-1}\right)^{-1}\gamma P^{-1}\theta_0 \\
+  \cov{\thetaR} &= \sigma^2 \left(\Phi^\top\Phi + \gamma P^{-1}\right)^{-1} \Phi^\top\Phi \left(\Phi^\top\Phi + \gamma P^{-1}\right)^{-1} \\
+  \MSE{\thetaR} &= \left|\left|\Bias{\thetaR}\right|\right|_2^2 + \tr{\cov{\thetaR}}
+\end{align*}
+
+The MSE is minimized by this choice of parameters\footnote{Even for the $Y=\theta+\epsilon$ and an impulse response, so that $\Phi$ has only ones on the main diagonal (but it is not the identity matrix because in general $\Phi$ is a tall matrix), the forms of the bias and covariance for the optimal parameters do not have a special form.}
+\begin{equation*}
+  \gamma^\star = \sigma^2,\hspace{1em} P^\star = \theta_0^{\phantom{\top}} \theta_0^\top.
+\end{equation*}
+The optimal regularization matrix $P$ is unknown because it depends on the unknown $\theta_0$ but it is an indication of how a good $P$ should look like (if they decay, then $P$ should have a certain structure). The advantage of the Tikhonov regularization compared to ridge regression is that information about the system can be used, whereas ridge regression only tries to decrease $||\theta||^2$.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Estimation Bias}
+\label{sec:estimation-bias}
+
+As far as I understand, there are two sources of bias:
+\begin{itemize}
+\item for an FIR system, I can underestimate the length of the response by choosing the model order too small, $p<\taumax$: this is the truncation error.
+
+  For least squares we said the estimation is unbiased: this is the case only when the order is correctly selected, otherwise it is too biased (see slide 10--10). Indeed we are trying to fit the data as
+  \begin{equation*}
+    \hat{\theta} = \arg \min_\theta ||Y - \Phi_p\theta|| = \left(\Phi_p^\top \Phi_p\right)^{-1}\Phi_p^\top Y
+  \end{equation*}
+  but the model is $Y = \Phi\theta_0 + \epsilon$. The bias then becomes
+  \begin{equation*}
+    \EE{\hat{\theta}} = \left(\Phi_p^\top \Phi_p\right)^{-1}\Phi_p^\top\Phi \theta_0 \neq \theta_0.
+  \end{equation*}
+  (This means the trade-off bias-variance can also be done with LS by varying the order parameter, but to a lower extent than using regularization where one has extra parameters available.)
+\item With the order parameter correct, I can bias the estimator on purpose by setting it to a value different from $\theta_0$.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Choice of the Regularization Matrices}
+\label{sec:regularization-matrices}
+
+A commonly used regularization matrix is the diagonally-correlated (DC) kernel
+\begin{equation*}
+  [P]_{ij} = c\alpha^{\frac{i+j}{2}}\rho^{|i-j|}
+\end{equation*}
+with $0 \le c$, $0 \le \alpha \le 1$ and $-1 \le \rho \le 1$. A simpler version of it is the tuned-correlated (TC) kernel where one lets $\rho = \sqrt{\alpha}$ in the DC kernel
+\begin{equation*}
+  [P]_{ij} = c\alpha^{\max\{i,j\}} =
+  \begin{bmatrix}
+    \alpha   & \alpha^2 & \alpha^3 & \ldots & \alpha^n \\
+    \alpha^2 & \alpha^2 & \alpha^3 & \ldots & \alpha^n \\
+    \alpha^3 & \alpha^3 & \alpha^3 & \ldots & \alpha^n \\
+    \ldots \\
+    \alpha^n & \alpha^n & \alpha^n & \ldots & \alpha^n \\
+  \end{bmatrix}
+\end{equation*}
+The top left entries are large, the bottom right small. Since the inverse enters the minimization problem (cost function), the top left part is small whereas the bottom down are large and induce a larger cost.
+
+The inverse of the TC kernel is a tridiagonal with the explicit form
+\begin{equation*}
+  [P{-1}]_{ij} = \frac{c_{ij}}{1-\rho^2}(-1)^{i+j}\alpha^{-\frac{i+j}{2}}\rho^{|i-j|},\hspace{2em} c_{ij} =
+  \begin{cases}
+    1 + \rho^2 & \textrm{if } i=j=2,\ldots,p-1 \\
+    0 & \textrm{if } |i-j| > 1 \\
+    1 & \textrm{otherwise}
+  \end{cases}
+\end{equation*}
+% Write p^{-1} explicitly.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Why the LS May Perform Badly}
+\label{sec:LS-illconditioned}
+
+Least-squares performs badly when the regression matrix $\Phi$ is ill-conditioned\footnote{The condition number of a matrix is defined as the ratio between the largest $\sigma_1$ and the smallest $\sigma_n$ singular value of the matrix
+  \begin{equation*}
+    \textrm{cond}(A) = \frac{\sigma_1}{\sigma_n}.
+  \end{equation*}
+  Note that from a numerical point of view, the matrix being full rank is not a guarantee that the LS problem can be stably solved.}, as a result of not being persistently excited and a small perturbation of the measurement data $Y$ can have a large impact on the estimate $\thetaLS$. Regularization helps in these cases. (Is there an easy way to show that $\Phi^\top\Phi + \gamma P^{-1}$ has a larger minimum singular value?)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Cross-Validation Methods}
+\label{sec:cross-validation}
+
+They are methods to select the discrete model orders (in least-squares or ARX) or the regularization parameters (\textit{e.g.} $\gamma$ and the kernel parameter $\alpha$ in regularized least squares).
+
+A popular method is called hold-out cross-validation and consists of the following steps:
+\begin{enumerate}
+\item split the data into two (equal but not necessarily) non-overlapping parts, one for estimation and the other for validation. The way in which the data is split depends on the type of data: for data generated by dynamical systems, where the data is sequential in time, the order is important. Here the first $N_\textrm{id}$ pairs of control inputs and output values $\{u(k),y(k)\}$ are used for identification and the remaining for validation. For static data, the order is not important: one could choose the odd-indexed pairs for identification and the even-indexed pairs for validation;
+\item use the estimation data to estimate a model for each mode structure or each regularization parameter. In the case of the continuous parameter $\gamma$, one estimates the model on a set of gridded values. If there are two continuous parameters, \textit{e.g.} $\gamma$ and $\alpha$, the gridding is done for both parameters;
+\item select the model structure / regularization parameters that give a model with least prediction error on validation data;
+\item use the selected model structure / regularization parameters and the complete data set to estimate a final model.
+\end{enumerate}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Numerical Solution of the Tikhonov Regularization Problem}
+\label{sec:numerical-tikhonov}
+
+For the numerical solution I am aware of two methods:
+  \begin{enumerate}
+  \item Solve directly the normal equation
+    \begin{equation}
+      \label{eq:regularized-normal-equation}
+      \left(\Phi^\top\Phi + \gamma P^{-1}\right) \hat{\theta} = \Phi^\top y
+    \end{equation} using MATLAB's backslash operator: although this squares $\Phi$'s condition number when constructing $\Phi^\top\Phi$, at least it does not require to explicitly construct the inverse;
+  \item Use the generalized SVD decomposition.
+    We first manipulate eq.~\eqref{eq:regularized-LS} to obtain
+    \begin{equation*}
+      ||y-\Phi \theta||_2^2 + ||D\theta||_2^2
+    \end{equation*}
+    by letting $D$ be the Cholesky decomposition of $\gamma P^{-1}$: that is $D^\top D = \gamma P^{-1}$.
+
+    There exists different definitions of generalized SVD: MATLAB implements the call \texttt{[U,V,X,C,S] = gsvd($\Phi$, D)} where $U$ and $V$ are unitary matrices, and $C$ and $S$ are nonnegative diagonal matrices such that
+    \begin{equation*}
+      \Phi = UCX^\top\hspace{2em} D = VSX^\top\hspace{2em} C^2+S^2=I.
+    \end{equation*}
+    Inserting the decompositions into eq.~\eqref{eq:regularized-normal-equation} gives
+    \begin{equation*}
+      X^\top \theta = (UC)^\top y
+    \end{equation*}
+    which can be solved as $\theta = X^\top \backslash (UC)^\top y$;
+  \item Eq.~\eqref{eq:regularized-LS} can also be rewritten as
+    \begin{equation*}
+      \left|\left|
+          \begin{bmatrix}
+            \Phi \\ D
+          \end{bmatrix}\theta -
+          \begin{bmatrix}
+            y \\ 0
+          \end{bmatrix}\right|\right|_2^2
+    \end{equation*}
+    and solved by backslash.
+
+    I tested the three approaches on prob.~8 and found the fastest to be the third which does not construct the normal equation and is therefore better conditioned at the small cost of increasing the problem size by the $r$ rows of $P^{-1}$. The first method is twice slower and the second is 100 (!) times slower: the problem is most likely the call to \texttt{gsvd}. This is strange because this is the method normally suggested, but probably only for larger regularization matrices.
+  \end{enumerate}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "notes"
+%%% End:

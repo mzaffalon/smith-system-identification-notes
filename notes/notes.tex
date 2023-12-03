@@ -25,8 +25,18 @@
 \newcommand{\du}{\ensuremath{\mathrm{d}}}
 % \newcommand{\bs}[1]{\boldsymbol{#1}}
 % \newcommand{\bsrm}[1]{\boldsymbol{\mathrm{#1}}}
-\newcommand{\cov}{\textrm{cov}}
-\newcommand{\rank}{\textrm{rank}}
+
+\newcommand{\EE}[1]{\mathbb{E}\left\{#1\right\}}
+\newcommand{\cov}[1]{\textrm{cov}\left(#1\right)}
+\newcommand{\Bias}[1]{\textrm{Bias}\left(#1\right)}
+\newcommand{\MSE}[1]{\textrm{MSE}\left(#1\right)}
+\newcommand{\tr}[1]{\textrm{tr}\left(#1\right)}
+\newcommand{\rank}[1]{\textrm{rank}\left(#1\right)}
+\newcommand{\thetaLS}{\hat{\theta}_\textrm{ML}}
+\newcommand{\thetaR}{\hat{\theta}^\textrm{R}}
+
+\newcommand{\taumax}{\tau_\text{max}}
+
 
 \addbibresource{notes.bib}
 
@@ -40,7 +50,7 @@
 %\include{freq-domain}
 %\include{time-domain}
 %\include{PEM}
-%\include{regularization}
+\include{regularization}
 %\include{exercises.tex}
 
 \printbibliography
