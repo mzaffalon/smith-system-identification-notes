@@ -35,7 +35,7 @@ The closed form mathematical solution to eq.~\eqref{eq:regularized-LS} is given 
 
 The James-Stein estimator was the first biased estimator that had a smaller MSE compared to least squares on all the ~\cite[page~3]{pillonetto}. It can be cast into a ridge regression problem
 \begin{equation*}
-  ||Y-\theta||^2 + \gamma ||\theta||^2,\hspace{2em} \gamma = \frac{(N-2)\sigma^2}{||Y||^2 - (N-2)\sigma^2}
+  ||Y-\theta||^2 + \gamma ||\theta||^2,\hspace{2em} \gamma = \frac{(N-2)\sigma^2}{||Y||^2 - (N-2)\sigma^2}.
 \end{equation*}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -58,19 +58,20 @@ The estimate eq.~\eqref{eq:regularized-LS-solution} has bias, covariance\footnot
   \MSE{\thetaR} &= \left|\left|\Bias{\thetaR}\right|\right|_2^2 + \tr{\cov{\thetaR}}
 \end{align*}
 
-The MSE is minimized by this choice of parameters\footnote{Even for the $Y=\theta+\epsilon$ and an impulse response, so that $\Phi$ has only ones on the main diagonal (but it is not the identity matrix because in general $\Phi$ is a tall matrix), the forms of the bias and covariance for the optimal parameters do not have a special form.}
-\begin{equation*}
+The MSE is minimized by this choice of parameters\footnote{Even for the $Y=\theta+\epsilon$ and an impulse response, so that $\Phi$ has only ones on the main diagonal (but it is not the identity matrix because in general $\Phi$ is a tall matrix), the forms of the bias and covariance for the optimal parameters do not seem to have a special form.}
+\begin{equation}
+  \label{eq:regLS-optimal-parameters}
   \gamma^\star = \sigma^2,\hspace{1em} P^\star = \theta_0^{\phantom{\top}} \theta_0^\top.
-\end{equation*}
+\end{equation}
 The optimal regularization matrix $P^\star$ is unknown because it depends on the unknown $\theta_0$ but the approximate knowledge of the solution helps to construct a ``good'' $P$. Compared to the ridge regression which only tries to decrease $||\theta||^2$, the Tikhonov regularization can use information about the system.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Estimation Bias}
 \label{sec:estimation-bias}
 
-As far as I understand, there are two sources of bias:
+As far as we (as students) understand, there are two sources of bias:
 \begin{itemize}
-\item for an FIR system, I can underestimate the length of the response by choosing the model order too small, $p<\taumax$: this is the truncation error.
+\item for an FIR system, one can underestimate the length of the response by choosing the model order too small, $p<\taumax$: this is the truncation error of Sect..
 
   For least squares we said the estimation is unbiased: this is the case only when the order is correctly selected, otherwise it is too biased (see slide 10--10). Indeed we are trying to fit the data as
   \begin{equation*}
@@ -81,7 +82,7 @@ As far as I understand, there are two sources of bias:
     \EE{\hat{\theta}} = \left(\Phi_p^\top \Phi_p\right)^{-1}\Phi_p^\top\Phi \theta_0 \neq \theta_0.
   \end{equation*}
   (This means the trade-off bias-variance can also be done with LS by varying the order parameter, but to a lower extent than using regularization where one has extra parameters available.)
-\item With the order parameter correct, I can bias the estimator on purpose by setting it to a value different from $\theta_0$.
+\item With the order parameter correct, one can bias the estimator on purpose by setting it to a value different from $\theta_0$.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -92,7 +93,9 @@ A commonly used regularization matrix is the diagonally-correlated (DC) kernel
 \begin{equation*}
   [P]_{ij} = c\alpha^{\frac{i+j}{2}}\rho^{|i-j|}
 \end{equation*}
-with $0 \le c$, $0 \le \alpha \le 1$ and $-1 \le \rho \le 1$. A simpler version of it is the tuned-correlated (TC) kernel where one lets $\rho = \sqrt{\alpha}$ in the DC kernel
+with $0 \le c$, $0 \le \alpha \le 1$ and $-1 \le \rho \le 1$: $\rho$ describes correlations $\alpha$ and the decays.
+
+A simpler version of it is the tuned-correlated (TC) kernel where one lets $\rho = \sqrt{\alpha}$ in the DC kernel
 \begin{equation*}
   [P]_{ij} = c\alpha^{\max\{i,j\}} =
   \begin{bmatrix}
@@ -105,9 +108,9 @@ with $0 \le c$, $0 \le \alpha \le 1$ and $-1 \le \rho \le 1$. A simpler version 
 \end{equation*}
 The top left entries are large, the bottom right small. Since the inverse enters the minimization problem (cost function), the top left part is small whereas the bottom down are large and induce a larger cost.
 
-The inverse of the TC kernel is a tridiagonal with the explicit form
+The inverse of the DC kernel is a tridiagonal with the explicit form
 \begin{equation*}
-  [P{-1}]_{ij} = \frac{c_{ij}}{1-\rho^2}(-1)^{i+j}\alpha^{-\frac{i+j}{2}}\rho^{|i-j|},\hspace{2em} c_{ij} =
+  [P^{-1}]_{ij} = \frac{c_{ij}}{1-\rho^2}(-1)^{i+j}\alpha^{-\frac{i+j}{2}}\rho^{|i-j|},\hspace{2em} c_{ij} =
   \begin{cases}
     1 + \rho^2 & \textrm{if } i=j=2,\ldots,p-1 \\
     0 & \textrm{if } |i-j| > 1 \\
@@ -115,6 +118,22 @@ The inverse of the TC kernel is a tridiagonal with the explicit form
   \end{cases}
 \end{equation*}
 % Write p^{-1} explicitly.
+
+During the exercises Jared commented that a TC/DC kernel should not be used for a FIR. The question is still unanswered in Moodle: \url{https://moodle-app2.let.ethz.ch/mod/forum/discuss.php?d=137879}.
+
+Despite the TC having entries that are exponential, the TC kernel is \emph{not} $\theta_0^{\phantom{\top}} \theta_0^\top$ of eq.~\eqref{eq:regLS-optimal-parameters} with
+\begin{equation*}
+  \theta_0 =
+  \begin{bmatrix}
+    a & a^2 & \ldots
+  \end{bmatrix}
+\end{equation*}
+from the truncation of a simple IIR filter $\tfrac{z^{-1}}{1-az^{-1}}$ for two reasons:
+\begin{itemize}
+\item $\theta_0^{\phantom{\top}} \theta_0^\top$ has equal powers on the diagonals parallel to the anti-diagonal;
+\item $\theta_0^{\phantom{\top}} \theta_0^\top$ has rank 1 and is therefore not invertible.
+\end{itemize}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Why the LS May Perform Badly}

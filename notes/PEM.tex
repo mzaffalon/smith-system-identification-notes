@@ -1,0 +1,254 @@
+\chapter{Error Prediction Methods and Transfer Function Models}
+\label{chap:error-prediction-methods-tf}
+
+We assume that the complete system model is given by
+\begin{equation}
+  \label{eq:PEM-tf-models}
+  y(k) = G(z)u(k) + H(z)e(k).
+\end{equation}
+Prediction error-based identification methods estimate the transfer functions $G(z)$ and $H(z)$ by minimizing the objective function $J(\epsilon)$, a function of the prediction error $\epsilon$
+\begin{equation*}
+  \hat{\epsilon}(k) = y(k) - \hat{y}(k|k-1).
+\end{equation*}
+The prediction $\hat{y}(k|k-1)$ for the time $k$ is a function of the previous measurements $k-1,\ k-2,\ldots$ only.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Prediction}
+\label{sec:prediction}
+
+We assume that $H(z)$ is monic\footnote{Monic means that $h(0)=1$:
+\begin{equation*}
+  H(q) = 1 + \sum_{k=1}^\infty h(k)q^{-k}.
+\end{equation*}} and stable\footnote{$H(z)$ has only poles strictly inside the unit circle.}. In this case, given the filtered noise $v(k)=H(z)e(k)$, $e(k)$ can be reconstructed from $v(k)$ as
+\begin{equation}
+  \label{eq:noise-reconstruction}
+  e(k) = H^{-1}(z)v(k).
+\end{equation}
+
+We now seek to predict $v(k)$ given the past values up to time $k-1$: this is called the \emph{one-step ahead} estimate. Since $H(z)$ is monic, we split the filtered noise contribution into the term $e(k)$ and other terms up to time $k-1$
+\begin{equation}
+  \label{eq:prediction-split-filtered-noise}
+  v(k) = H(z)e(k) = e(k) + (H(z)-1)e(k)
+\end{equation}
+The \emph{predicted} filtered noise $\hat{v}(k|k-1)$ becomes
+\begin{equation*}
+  \hat{v}(k|k-1) = (H(q)-1)e(k)
+\end{equation*}
+This can be intuitively understood because the error probability function distribution for $\{e\}$ has zero mean\footnote{Had the probability distribution $f_e(x)$ not had a zero mean, we would have to modify the predition according to
+  \begin{equation*}
+    \hat{v}(k|k-1) = \arg\max_x f_e(x - m(k-1)),\hspace{2em} m(k-1) = (H(q)-1)e(k).
+  \end{equation*}}: if we were left to guess $e(k)$, we would guess $e(k)=0$. Making use of eq.~\eqref{eq:noise-reconstruction}, the one-step ahead estimate
+\begin{equation}
+  \label{eq:filtered-noise-one-step-prediction}
+  \hat{v}(k|k-1) = \left(1-H^{-1}(z)\right)v(k)
+\end{equation}
+is determined only from the knowledge of the past values of $v(k-i)$ with $i>0$.
+
+For the model of eq.~\eqref{eq:PEM-tf-models}, the one-step ahead predictor
+\begin{equation*}
+  \hat{y}(k|k-1) = G(z)u(k) + \hat{v}(k|k-1)
+\end{equation*}
+can be rewritten with the help of the expression for $\hat{v}(k|k-1)$ as
+\begin{equation}
+  \label{eq:one-step-ahead-predictor}
+  \hat{y}(k|k-1) = H^{-1}(z)G(z)u(k) + \left(1-H^{-1}(z)\right) y(k).
+\end{equation}
+The prediction error\footnote{Using eq.~\eqref{eq:one-step-ahead-predictor}
+\begin{align*}
+  \epsilon(k) &= y(k) - \hat{y}(k|k-1) \\
+              &= y(k) - H^{-1}(z)G(z)u(k) - \left(1-H^{-1}(z)\right) y(k) \\
+              &= H^{-1}(z)(y(k) - G(z)u(k)) \\
+              &= H^{-1}(z)v(k) = e(k)
+\end{align*}}
+\begin{equation}
+  \label{eq:one-step-ahead-predictor-error}
+  \epsilon(k) = y(k) - \hat{y}(k|k-1) = H^{-1}(z)v(k) = e(k)
+\end{equation}
+is the noise $e(k)$ that cannot be predicted: the \emph{innovation} is the part of the output prediction that cannot be estimated from past measurements.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Example: Moving Average}
+
+The model
+\begin{equation*}
+  v(k) = e(k) + ce(k-1) \rightarrow H(z) = 1+cz^{-1}
+\end{equation*}
+is invertible when $|c|<1$. The one-step ahead predictor eq.~\eqref{eq:filtered-noise-one-step-prediction} can be expressed in terms of the error $\epsilon(k-1)$ using eq.~\eqref{eq:one-step-ahead-predictor-error}
+\begin{equation*}
+  \hat{v}(k|k-1) = \left(1-H^{-1}(z)\right)H(z)e(k) = cz^{-1}\epsilon(k) =  c\epsilon(k-1)
+\end{equation*}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Family of Transfer-Function Models}
+\label{sec:family-tf-models}
+
+The advantage of the transfer-function models is that they can be described by fewer parameters and that the inputs required to identify the system do not have to be persistently exciting as it is the case when one wants to identify frequency or time-response: we have seen in Sect.~\ref{} that for frequency domain methods, the order of excitation must be double the number of complex estimates of the transfer function $G(e^{j\omega_n})$ since gain and phase must be determined for each frequency; for a time response one requires the same persistency order as the number of impulse response terms.
+
+If we control the input, this requirement is easy to satisfy. If on the other hand the data is given, this may not be the case and in these situations, one is better off looking for transfer functions/state space representations because of the reduced numbers of parameters to identify.
+
+Prediction error-based identification methods construct the prediction error
+\begin{equation*}
+  \epsilon(k,\theta) = y(k) - \hat{y}(k,\theta)
+\end{equation*}
+from the (one-step ahead) predictor $\hat{y}(k,\theta)$ which is based on the guesses $\hat{G}(z)=G(z,\theta)$ and $\hat{H}^{-1}(z)=H^{-1}(z,\theta)$, the guesses being parametrized by $\theta$. The optimal $\theta^\star$ is the argument that minimizes the cost function $J=J(\epsilon)$
+\begin{equation*}
+  \theta^\star = \arg \min_\theta J(\epsilon(k,\theta)).
+\end{equation*}
+Typical choices for the objective functions $J(\epsilon)$ are the 2-norm $||\epsilon||_2^2$ or the maximum deviation, the $\infty$-norm $||\epsilon||_\infty$. The kind of minimization depends on how the models $G(q)$ and $H^{-1}(q)$ are parametrised. In general, the parametrization will not be linear and the optimization may not be convex. Note moreover that the minimization of $||\epsilon||_2^2$ is not equivalent to the least squres method, unless  $H(z)=1$:
+\begin{equation*}
+  y(k) = G(z)u(k) + e(k).
+\end{equation*}
+
+Since this approach does not require an a-priori knowlege of the system, it is also called \emph{black-box} approach.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Equation Error Model Structure (ARX)}
+\label{sec:ARX}
+
+%The numerator is the moving average (MA) part, the denominator the autoregressive (AR) part, X for the exogeraneous (external) input.
+
+The ARX model\footnote{From $y(k) = \frac{B(z)}{A(z)}u(k)$, rearranging the terms
+  \begin{equation*}
+     A(z)y(k) = B(z)u(k) \rightarrow y(k) = B(z)u(k) + (1-A(z))y(k).
+  \end{equation*}}
+\begin{equation}
+  \label{eq:ARX-model}
+  y(k) = B(z)u(k) + \left(1-A(z)\right)y(k) + e(k)
+\end{equation}
+is a simple input-output relationship where the error enters as a direct term. We take
+\begin{equation*}
+  A(z) = 1 + a_1z^{-1} + \ldots + a_nz^{-n},\hspace{2em} B(z) = b_1z^{-1} + \ldots + b_mz^{-m}
+\end{equation*}
+note that $A(z)$ is monic and $B(z)$ does not have a constant term, \textit{i.e.} the model has no feed-through. It corresponds to the model of eq.~\eqref{eq:PEM-tf-models} with
+\begin{equation*}
+  G(z) = \frac{B(z)}{A(z)},\hspace{2em}H(z) = \frac{1}{A(z)}.
+\end{equation*}
+and generates the one-step ahead predictor
+\begin{equation}
+  \label{eq:one-step-ahead-ARX}
+  \hat{y}(k|k-1) = \left(1-A(z)\right)y(k) + B(z)u(k)
+\end{equation}
+either by plugging $G(z)$ and $H^{-1}(z)$ in eq.~\eqref{eq:one-step-ahead-predictor} or by using the result of eq.~\eqref{eq:one-step-ahead-predictor-error} that $\hat{y}(k|k-1) = y(k) - e(k)$ in eq.~\eqref{eq:ARX-model}.
+
+While the model covers a limited set of real-world problems (notably those where the perturbation act as a force), the predictor eq.~\eqref{eq:one-step-ahead-ARX} has the advantage of forming the linear regressor
+\begin{equation*}
+  y(k) = \varphi^\top(k)\theta
+\end{equation*}
+the \emph{parameter vector} $\theta$ being the unknown coefficients of the polynomials $A(z)$ and $B(z)$
+\begin{equation*}
+  \theta =
+  \begin{bmatrix}
+    a_1 & \ldots & a_n & b_1 & \ldots & b_m
+  \end{bmatrix}^\top
+\end{equation*}
+and the \emph{regressor vector} $\varphi(k)$ being the output and input terms
+\begin{equation*}
+  \varphi^\top(k) =
+  \begin{bmatrix}
+    -y(k-1) & \ldots & -y(k-n) & u(k-1) & \ldots & u(k-m)
+  \end{bmatrix}.
+\end{equation*}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Estimate Bias}
+\label{sec:estimate-bias-ARMAX}
+
+The ARX model structure is applied also to systems that do not have this noise model for the simple reason that it is linear. One must be aware that this induce a bias in the estimates $G(z,\theta^\star) = \tfrac{B(z,\theta^\star)}{A(z,\theta^\star)}$ and $H^{-1}(z,\theta^\star)$, see the numerical example in the slides 9.30.
+
+%The prediction error for this model is
+%\begin{align*}
+%  \epsilon(k,\theta) &= y(k) - \hat{y}(k,\theta) \\
+%  &= \left(A(z,\theta)G(z)-B(z,\theta)\right)u(k) + A(z,\theta)H(z)e(k).
+%\end{align*}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{ARMAX Model Structure}
+\label{sec:ARMAX}
+
+The ARX model structure is not very flexible with regards to the noise model: indeed it requires the noise to have the particular structure\footnote{It has the advantage (together with FIR models) of forming a linear regressor.} $1/A(z)$. The ARMAX transfer function model is in the form
+\begin{equation}
+  \label{eq:ARMAX-model}
+  A(z)y(k) = B(z)u(k) + C(z)e(k)
+\end{equation}
+where $A(z)$ and $B(z)$ are as in ARX and $C(z)$ is monic. It corresponds to the model of eq.~\eqref{eq:PEM-tf-models} with
+\begin{equation*}
+  G(z) = \frac{B(z)}{A(z)},\hspace{2em} H(z) = \frac{C(z)}{A(z)}
+\end{equation*}
+and with the one-step ahead predictor\footnote{The one-step predictor is more easily obtained by plugging the expressions for $G(z)$ and $H^{-1}(z)$ into eq.~\eqref{eq:one-step-ahead-predictor}.
+
+  Working out the expression directly is cumbersome: by using eq.~\eqref{eq:one-step-ahead-predictor-error} in the model eq.~\eqref{eq:ARMAX-model}, we have
+  \begin{equation*}
+    \hat{y}(k|k-1) = y(k) - e(k) = \frac{B(z)}{A(z)}u(k) + \left(\frac{C(z)}{A(z)}-1\right)e(k).
+  \end{equation*}
+  By plugging in the expression for the noise
+  \begin{equation*}
+    e(k) = C^{-1}(z)(A(z)y(k)) - B(z)u(k))
+  \end{equation*}
+  we obtain
+  \begin{equation*}
+    C(z)\hat{y}(k|k-1) = B(z)u(k) + (C(z)-A(z))y(k).
+  \end{equation*}
+  Some manipulation is still required to bring it into the final form eq.~\eqref{eq:one-step-ahead-ARMAX}.}
+\begin{equation}
+  \label{eq:one-step-ahead-ARMAX}
+  \hat{y}(k|\theta) = (1-A(z))y(k) + B(z)u(k) + (C(z)-1)\underbrace{(y(k)-\hat{y}(k|\theta))}_{\doteq \epsilon(k,\theta)}.
+\end{equation}
+Introducing the regression vector
+\begin{equation*}
+  \varphi^\top(k,\theta) =
+  \begin{bmatrix}
+    -y(k-1) & \ldots & u(k-1) & \ldots & \epsilon(k-1,\theta) & \ldots
+  \end{bmatrix}
+\end{equation*}
+eq.~\eqref{eq:one-step-ahead-ARMAX} induces the pseudolinear regression
+\begin{equation*}
+  \hat{y}(k,\theta) = \varphi^\top(k,\theta) \theta.
+\end{equation*}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Constrained Minimization}
+\label{sec:ARMAX-minimization}
+
+The optimization-based algorithm
+\begin{equation*}
+  \begin{aligned}
+    \min_{\theta,\epsilon}\ & ||\epsilon||_2 \\
+    \textrm{subject to } & Y = \Phi(\epsilon)\theta + \epsilon
+  \end{aligned}
+\end{equation*}
+has a non-linear dependence on $\theta$ in the affine constrained.
+
+% MATLAB code? Numerical example shows overfitting
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{General Family of Model Structures}
+\label{sec:general-family-models}
+
+The most general family of model structure is~\cite[Sect.~4]{ljung}
+\begin{equation}
+  \label{eq:general-family-models}
+  A(z)y(k) = \frac{B(z)}{F(z)}u(k) + \frac{C(z)}{D(z)}e(k)
+\end{equation}
+Some of the common cases that we have seen so far are summarized in Table~\ref{tbl:black-box-models}.
+
+\begin{table}[h]
+  \centering
+  \begin{tabular}[h]{ll}
+    \toprule
+    Polynomials & Name of Model Structure \\
+    \midrule
+    B & FIR \\
+    A\ B & ARX \\
+    A\ B\ C & ARMAX \\
+    A\ B\ C\ D & ARARMAX \\
+    B\ F\ C\ D & Box-Jenkins \\
+    \bottomrule
+  \end{tabular}
+  \caption{Some common black-box SISO models using the polynomials of eq.~\eqref{eq:general-family-models}.}
+  \label{tbl:black-box-models}
+\end{table}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "notes"
+%%% End:

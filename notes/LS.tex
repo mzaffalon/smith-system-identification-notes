@@ -8,11 +8,15 @@ Consider a model
 \end{equation}
 where $Y = \begin{bmatrix}
   y_0 & \ldots && y_{N-1}
-\end{bmatrix}^\top$ is a vector containing the measurements $\{y_0,\ldots, y_{N-1}\}$, $\Phi\in \mathbb{R}^{N\times p}$ is called the regressor and $\theta\in\mathbb{R}^p$ is the model parameter, the vector of $p$ unknown parameters to be estimated; $p$ is the model order.
+\end{bmatrix}^\top$ is a vector containing the measurements $\{y_0,\ldots, y_{N-1}\}$, $\Phi\in \mathbb{R}^{N\times p}$ is called the regressor and $\theta\in\mathbb{R}^p$ is the model parameter to be estimated; $p$ is the model order.
 The noise vector $\epsilon =
 \begin{bmatrix}
   v_0 & \ldots & v_{N-1}
-\end{bmatrix}^\top$ has zero mean $\EE{\epsilon}=0$ and covariance $\EE{\epsilon \epsilon^\top}=R$, a symmetric positive definite matrix.
+\end{bmatrix}^\top$ has zero mean $\EE{\epsilon}=0$ and covariance\footnote{$\epsilon$ can be numerically constructed from
+  \begin{equation*}
+    \epsilon = C e
+  \end{equation*}
+  where $C$ is the Cholesky decomposition of $R$ and $e\sim\mathcal{N}(0,1)$ is i.i.d.} $\EE{\epsilon \epsilon^\top}=R$, a symmetric positive definite matrix.
 
 The maximum likelihood (ML) probability\footnote{What is the expectation value of eq.~\eqref{eq:LS-problem}? Using eq.~\eqref{eq:thetaLS-estimate}, I \emph{think} the term $Y-\Phi\theta$ should be evaluated as
   \begin{equation*}
