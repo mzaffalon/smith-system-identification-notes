@@ -16,17 +16,12 @@ This can be achieved if we modify the minimization problem by adding a regulariz
   \label{eq:regularized-LS}
   ||Y-\Phi \theta||_2^2 + \gamma \theta^\top P^{-1}\theta
 \end{equation}
-where $\gamma P^{-1}$ is a positive definite matrix. $P$ is called the \emph{kernel} or the regularization matrix\footnote{Wwhen $P=\mathbb{I}_N$ the technique is called ridge regression, otherwise it goes under the name of Tikhonov regularization.}.
+where $\gamma P^{-1}$ is a positive definite matrix. $P$ is called the \emph{kernel} or the regularization matrix\footnote{When $P=\mathbb{I}_N$ the technique is called ridge regression, otherwise it goes under the name of Tikhonov regularization.}.
 
 Regularization prevents overfitting, reduces the sensitivity to noise and can improve the estimate by a proper choice of the kernel (\textit{e.g.} for instance if the system is known to be stable, this information can be used to improve the estimation.)
 
 % The model contains also a truncation error
 %How to choose $\taumax$
-%The original argument to introduce a regularization term~\cite{pillonetto} is that a good estimator $\hat{\theta}$ should also be a good estimator of the Euclidean norm of $\theta_0$ but for the LS estimator, we have
-%\begin{equation*}
-%  ||\hat{\theta}||_2^2 = ||\theta_0||_2^2 + N\sigma^2
-%\end{equation*}
-%``the least squares estimator overestimates $||\theta||$. It seems desirable''
 
 The closed form mathematical solution to eq.~\eqref{eq:regularized-LS} is given by
 \begin{equation}
@@ -67,7 +62,7 @@ The MSE is minimized by this choice of parameters\footnote{Even for the $Y=\thet
 \begin{equation*}
   \gamma^\star = \sigma^2,\hspace{1em} P^\star = \theta_0^{\phantom{\top}} \theta_0^\top.
 \end{equation*}
-The optimal regularization matrix $P$ is unknown because it depends on the unknown $\theta_0$ but it is an indication of how a good $P$ should look like (if they decay, then $P$ should have a certain structure). The advantage of the Tikhonov regularization compared to ridge regression is that information about the system can be used, whereas ridge regression only tries to decrease $||\theta||^2$.
+The optimal regularization matrix $P^\star$ is unknown because it depends on the unknown $\theta_0$ but the approximate knowledge of the solution helps to construct a ``good'' $P$. Compared to the ridge regression which only tries to decrease $||\theta||^2$, the Tikhonov regularization can use information about the system.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Estimation Bias}

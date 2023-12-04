@@ -22,7 +22,9 @@ The maximum likelihood (ML) probability\footnote{What is the expectation value o
   \begin{equation*}
     \EE{(Y - \Phi \thetaLS)^\top R^{-1} (Y - \Phi \thetaLS)} = \EE{\epsilon^\top\left(I - \Phi K \Phi^\top R\right)^\top R^{-1}\left(I - \Phi K \Phi^\top R\right)\epsilon}
   \end{equation*}
-  but I do not know what the term $\EE{\epsilon^\top R^{-1}\epsilon}$ evaluates to. I expect this to be equal to $N$, at least this is what happens with an uncorrelated noise with constant variance.} requires us to minimize
+  but I do not know what the term $\EE{\epsilon^\top R^{-1}\epsilon}$ evaluates to. I expect this to be equal to $N$, at least this is what happens with an uncorrelated noise with constant variance.
+
+  Note also that while the matrix $vv^\top$ has rank 1, the variance matrix $R$ for Gaussian distributed white noise is full rank because it is the sum of random vectors that span the whole space.} requires us to minimize
 \begin{equation}
   \label{eq:LS-problem}
   (Y - \Phi \theta)^\top R^{-1} (Y - \Phi \theta) = ||C (Y - \Phi \theta)||_2^2
@@ -31,14 +33,14 @@ where $C$ is the Cholesky decomposition of the symmetric positive definite matri
 
 The minimum of eq.~\eqref{eq:LS-problem} is found by setting the gradient of the expression with respect to $\theta$ to zero, which gives the normal equation
 \begin{equation*}
-  \left(\Phi^\top R^{-1}\Phi\right)^{-1} \thetaLS = \Phi^\top R^{-1}Y.
+  \Phi^\top R^{-1}\Phi \thetaLS = \Phi^\top R^{-1}Y.
 \end{equation*}
 The \emph{mathematical} solution is given by
 \begin{equation}
   \label{eq:LS-estimator}
   \thetaLS = \left(\Phi^\top R^{-1}\Phi\right)^{-1} \Phi^\top R^{-1}Y
 \end{equation}
-and it exists provided that $C\Phi$ has full rank\footnote{The usual warning holds for the rank. Instead we want to have the matrix $C\Phi$ with the smallest condition number for the estimate to be numerically stable, which is a stronger condition than full rank, to uniquely determine the best estimate $\thetaLS$.}: $\rank(C\Phi) = p$. When this is the case, the system is said to be \emph{persistently excited}, see Sect.. Given the freedom to choose $\Phi$, one must select it such that $C\Phi$ is persistently excited.
+and it exists provided that $C\Phi$ has full rank\footnote{The usual warning holds for the rank. Instead we want to have the matrix $C\Phi$ with the smallest condition number for the estimate to be numerically stable, which is a stronger condition than full rank, to uniquely determine the best estimate $\thetaLS$.}: $\rank{C\Phi} = p$. When this is the case, the system is said to be \emph{persistently excited}, see Sect.. Given the freedom to choose $\Phi$, one must select it such that $C\Phi$ is persistently excited.
 
 \emph{Numerically} one should not form the normal equation directly because it squares the condition number of $C\Phi$ and rely either on the QR decomposition or on the SVD to solve eq.~\eqref{eq:LS-problem}.
 This is taken care automatically by MATLAB when using the backslash $\backslash$ operator
