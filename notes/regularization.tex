@@ -3,7 +3,7 @@
 
 We have seen that the solution $\thetaLS$ of the least squares problem eq.~\eqref{eq:LS-problem}
 \begin{equation*}
-  \arg\min_\theta ||y-\Phi \theta||_2^2
+  \arg\min_\theta ||Y-\Phi \theta||_2^2
 \end{equation*}
 is unbiased, see Sect.~\ref{sec:bias-variance-MSE-LS-estimation}.
 
@@ -16,7 +16,7 @@ This can be achieved if we modify the minimization problem by adding a regulariz
   \label{eq:regularized-LS}
   ||Y-\Phi \theta||_2^2 + \gamma \theta^\top P^{-1}\theta
 \end{equation}
-where $\gamma P^{-1}$ is a positive definite matrix. $P$ is called the \emph{kernel} or the regularization matrix\footnote{When $P=\mathbb{I}_N$ the technique is called ridge regression, otherwise it goes under the name of Tikhonov regularization.}.
+where $\gamma P^{-1}$ is a positive definite matrix. $P$ is called the \emph{kernel} or the regularization matrix\footnote{When $P=\mathbb{I}_N$ the technique is called ridge regression, otherwise it goes under the name of Tikhonov regularization. Compared to the ridge regression which only tries to decrease $||\theta||^2$, the Tikhonov regularization can use information about the system, see Sect.~\ref{sec:regularization-matrices}.}.
 
 Regularization prevents overfitting, reduces the sensitivity to noise and can improve the estimate by a proper choice of the kernel (\textit{e.g.} for instance if the system is known to be stable, this information can be used to improve the estimation.)
 
@@ -26,7 +26,7 @@ Regularization prevents overfitting, reduces the sensitivity to noise and can im
 The closed form mathematical solution to eq.~\eqref{eq:regularized-LS} is given by
 \begin{equation}
   \label{eq:regularized-LS-solution}
-  \thetaR = \left(\Phi^\top\Phi + \gamma P^{-1}\right)^{-1}\Phi^\top Y.
+  \thetaR = \left(\Phi^\top\Phi + \gamma P^{-1}\right)^{-1}\Phi^\top Y = \left(P\Phi^\top\Phi + \gamma\II \right)^{-1}P\Phi^\top Y.
 \end{equation}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -42,52 +42,39 @@ The James-Stein estimator was the first biased estimator that had a smaller MSE 
 \section{Bias, Covariance and MSE of the Regularized Least Squares Estimation}
 \label{sec:bias-covariance-MSE-regLS-estimation}
 
-We assume uncorrelated noise\footnote{In Sect.~\ref{chap:LS-estimation} we considered the more general case of correlated noise $\EE{\epsilon \epsilon^\top} = R$.} with constant variance $\sigma^2$: $\EE{\epsilon \epsilon^\top} = \sigma^2I_N$.
+We assume uncorrelated noise with constant variance $1$: $\EE{e e^\top} = \II_N$.
 
-The estimate eq.~\eqref{eq:regularized-LS-solution} has bias, covariance\footnote{Let $K = \left(\Phi^\top\Phi + \gamma P^{-1}\right)^{-1}$ so that $\thetaR = K\Phi^\top Y$. Plugging $Y=\Phi\theta_0+\epsilon$, we have
+The estimate eq.~\eqref{eq:regularized-LS-solution} has bias\footnote{Let $K = \left(\Phi^\top\Phi + \gamma P^{-1}\right)^{-1}$ so that $\thetaR = K\Phi^\top Y$. Plugging $Y=\Phi\theta_0+e$, we have $\EE{\thetaR} = K\Phi^\top\Phi\theta_0$. The bias is
   \begin{equation*}
-    \thetaR - \EE{\thetaR} = K\Phi^\top\epsilon
-  \end{equation*}
-  and
+    \EE{\thetaR} - \theta_0 = (K\Phi^\top\Phi - \II)\theta_0 = K(\Phi^\top\Phi - K^{-1})\theta_0 = -\gamma KP^{-1}\theta_0.
+  \end{equation*}}, covariance\footnote{With the same notation as before, we have $\thetaR - \EE{\thetaR} = K\Phi^\top e$. The covariance is
   \begin{equation*}
-    \cov{\thetaR} = \EE{\left(K\Phi^\top\epsilon\right) \left(K\Phi^\top\epsilon\right)^\top} = K\Phi^\top \EE{\epsilon\epsilon^\top} \Phi K = \sigma^2 K\Phi^\top\Phi K.
+    \cov{\thetaR} = \EE{\left(K\Phi^\top e\right) \left(K\Phi^\top e\right)^\top} = K\Phi^\top \EE{e e^\top} \Phi K = K\Phi^\top\Phi K.
   \end{equation*}} and MSE
 \begin{align*}
   \Bias{\thetaR} &= -\left(\Phi^\top\Phi + \gamma P^{-1}\right)^{-1}\gamma P^{-1}\theta_0 \\
-  \cov{\thetaR} &= \sigma^2 \left(\Phi^\top\Phi + \gamma P^{-1}\right)^{-1} \Phi^\top\Phi \left(\Phi^\top\Phi + \gamma P^{-1}\right)^{-1} \\
+  \cov{\thetaR} &= \left(\Phi^\top\Phi + \gamma P^{-1}\right)^{-1} \Phi^\top\Phi \left(\Phi^\top\Phi + \gamma P^{-1}\right)^{-1} \\
   \MSE{\thetaR} &= \left|\left|\Bias{\thetaR}\right|\right|_2^2 + \tr{\cov{\thetaR}}
 \end{align*}
-
-The MSE is minimized by this choice of parameters\footnote{Even for the $Y=\theta+\epsilon$ and an impulse response, so that $\Phi$ has only ones on the main diagonal (but it is not the identity matrix because in general $\Phi$ is a tall matrix), the forms of the bias and covariance for the optimal parameters do not seem to have a special form.}
-\begin{equation}
-  \label{eq:regLS-optimal-parameters}
-  \gamma^\star = \sigma^2,\hspace{1em} P^\star = \theta_0^{\phantom{\top}} \theta_0^\top.
-\end{equation}
-The optimal regularization matrix $P^\star$ is unknown because it depends on the unknown $\theta_0$ but the approximate knowledge of the solution helps to construct a ``good'' $P$. Compared to the ridge regression which only tries to decrease $||\theta||^2$, the Tikhonov regularization can use information about the system.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Estimation Bias}
-\label{sec:estimation-bias}
-
-As far as we (as students) understand, there are two sources of bias:
-\begin{itemize}
-\item for an FIR system, one can underestimate the length of the response by choosing the model order too small, $p<\taumax$: this is the truncation error of Sect..
-
-  For least squares we said the estimation is unbiased: this is the case only when the order is correctly selected, otherwise it is too biased (see slide 10--10). Indeed we are trying to fit the data as
-  \begin{equation*}
-    \hat{\theta} = \arg \min_\theta ||Y - \Phi_p\theta|| = \left(\Phi_p^\top \Phi_p\right)^{-1}\Phi_p^\top Y
-  \end{equation*}
-  but the model is $Y = \Phi\theta_0 + \epsilon$. The bias then becomes
-  \begin{equation*}
-    \EE{\hat{\theta}} = \left(\Phi_p^\top \Phi_p\right)^{-1}\Phi_p^\top\Phi \theta_0 \neq \theta_0.
-  \end{equation*}
-  (This means the trade-off bias-variance can also be done with LS by varying the order parameter, but to a lower extent than using regularization where one has extra parameters available.)
-\item With the order parameter correct, one can bias the estimator on purpose by setting it to a value different from $\theta_0$.
-\end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Choice of the Regularization Matrices}
 \label{sec:regularization-matrices}
+
+The MSE is minimized by this choice of parameters
+\begin{equation}
+  \label{eq:regLS-optimal-parameters}
+  \gamma^\star = 1,\hspace{1em} P^\star = \theta_0^{\phantom{\top}} \theta_0^\top.
+\end{equation}
+The optimal regularization matrix $P^\star$ is unknown\footnote{\begin{quotation}
+  $P^\star = \theta_0^{\phantom{\top}} \theta_0^\top$ has rank 1 and is therefore not invertible. To get a well-defined problem, the inverse $P^{-1}$ is replaced by the Moore-Penrose pseudoinverse $P^+$. It turns out that the solution of the problem defined with $P^\dagger$ is also equal to $(P\Phi^\top \Phi+\gamma\II)^{-1}P\Phi^\top Y$. [Mohamed Abdalmoaty on Moodle]
+\end{quotation}} because it depends on the unknown $\theta_0$ but the approximate knowledge of the solution helps to construct a ``good'' $P$.
+
+\begin{quotation}
+  Regularization functions are designed to encode prior knowledge on the unknown system; some choices will result in better estimates. The choice can be either subjective or based on cross-validation and different regularization functions/kernels give rise to different model classes. Technically there is no wrong regularization function, but there is an optimal one (in the sense of minimum MSE).
+
+  A quadratic regularization function based on the TC kernel is well-suited for exponentially decaying pulse responses of stable linear systems. In that case, a high order FIR model is used to estimate the first significant part of the pulse response of the unknown system, ignoring the tail. An FIR system is always stable, but its coefficients may not be exponentially decaying. An impulse response experiment may be used to reveal some properties of the system if the system and experimental configuration allow it. [Mohamed Abdalmoaty on Moodle]
+  \end{quotation}
 
 A commonly used regularization matrix is the diagonally-correlated (DC) kernel
 \begin{equation*}
@@ -95,7 +82,20 @@ A commonly used regularization matrix is the diagonally-correlated (DC) kernel
 \end{equation*}
 with $0 \le c$, $0 \le \alpha \le 1$ and $-1 \le \rho \le 1$: $\rho$ describes correlations $\alpha$ and the decays.
 
-A simpler version of it is the tuned-correlated (TC) kernel where one lets $\rho = \sqrt{\alpha}$ in the DC kernel
+A simpler version of it is the tuned-correlated (TC) kernel\footnote{Despite having entries that are exponential, the TC kernel is \emph{not} $\theta \theta^\top$
+  \begin{equation*}
+    \theta \theta^\top =
+    \begin{bmatrix}
+      a & a^2 & a^3 & \ldots \\
+      a^2 & a^3 & \ldots \\
+      a^3 & \ldots \\
+      \ldots
+    \end{bmatrix}\hspace{1em} \textrm{with } \theta =
+    \begin{bmatrix}
+      a & a^2 & \ldots
+    \end{bmatrix}
+  \end{equation*}
+  coming from the truncation of the IIR filter $\tfrac{z^{-1}}{1-az^{-1}} \approx z^{-1}(1+az^{-1}+a^2z^{-2}+\ldots)$.} where one lets $\rho = \sqrt{\alpha}$ in the DC kernel
 \begin{equation*}
   [P]_{ij} = c\alpha^{\max\{i,j\}} =
   \begin{bmatrix}
@@ -119,23 +119,30 @@ The inverse of the DC kernel is a tridiagonal with the explicit form
 \end{equation*}
 % Write p^{-1} explicitly.
 
-During the exercises Jared commented that a TC/DC kernel should not be used for a FIR. The question is still unanswered in Moodle: \url{https://moodle-app2.let.ethz.ch/mod/forum/discuss.php?d=137879}.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Estimation Bias}
+\label{sec:estimation-bias}
 
-Despite the TC having entries that are exponential, the TC kernel is \emph{not} $\theta_0^{\phantom{\top}} \theta_0^\top$ of eq.~\eqref{eq:regLS-optimal-parameters} with
-\begin{equation*}
-  \theta_0 =
-  \begin{bmatrix}
-    a & a^2 & \ldots
-  \end{bmatrix}
-\end{equation*}
-from the truncation of a simple IIR filter $\tfrac{z^{-1}}{1-az^{-1}}$ for two reasons:
+\begin{quotation}
+  One cannot say that the linear least-squares method is unbiased in general. There are three elements at play: the data set, the model used, and the estimation method. Least-squares is just the estimation method. To check if it is unbiased, an assumption has to be made on the true system that generated the data, and the model used to get the closed form expression of the LS estimator. [Mohamed Abdalmoaty on Moodle]
+\end{quotation}
+
+In the following, the input $u$ is known, the measurement noise $e$ has zero-mean, the data is generated as $Y=\Phi\theta_0+e$ with $\theta_0\in R^p$; we estimate $\theta\in R^q$ in the linear regression model $Y=\Phi_q\theta+e$; and we use the least-squares estimation method: then $\hat{\theta} = \left(\Phi_q^\top \Phi_q\right)^{-1} \Phi_q^\top Y$.
+
+Here some examples of source of biased estimate:
 \begin{itemize}
-\item $\theta_0^{\phantom{\top}} \theta_0^\top$ has equal powers on the diagonals parallel to the anti-diagonal;
-\item $\theta_0^{\phantom{\top}} \theta_0^\top$ has rank 1 and is therefore not invertible.
+\item The model does not match the generating data. One underestimates the length of the response by choosing the model order too small, $q<p=\taumax$: this is the truncation error of Sect.. (see slide 10--10). Indeed we are trying to fit the data with a model of order $q$ but the model has order $p$. The estimate is biased because
+  \begin{equation*}
+    \EE{\hat{\theta}} = \left(\Phi_q^\top \Phi_q\right)^{-1}\Phi_q^\top\Phi \theta_0 \neq \theta_0.
+  \end{equation*}
+  This means the trade-off bias-variance can also be done with LS by varying the order parameter, but to a lower extent than using regularization where one has extra parameters available.
+
+  Note that here the regressor involves only the known (noise-free) input $u$;
+\item The data comes from an ARX system with $p=n+m$ parameters and $\theta_0\in R^{n+m}$ is the true parameter. As opposed to the case above, here $\Phi$ involves also the random outputs: for this reason the resulting LS estimator is \emph{biased} even though we have a correct model order/structure (\textit{i.e.}, the model that matches the data generating system);
+\item Finally, even with the correct order parameter, one can \emph{on purpose} bias $\hat{\theta}$ by adding the regularization term to $||Y-\Phi\theta||_2$.
 \end{itemize}
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 \subsection{Why the LS May Perform Badly}
 \label{sec:LS-illconditioned}
 
@@ -159,11 +166,13 @@ A popular method is called hold-out cross-validation and consists of the followi
 \item use the selected model structure / regularization parameters and the complete data set to estimate a final model.
 \end{enumerate}
 
+Numerical example in \texttt{10\_lect/regularization.m}, for the moment limited to ridge regression.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Numerical Solution of the Tikhonov Regularization Problem}
 \label{sec:numerical-tikhonov}
 
-For the numerical solution I am aware of two methods:
+For the numerical solution I am aware of three methods:
   \begin{enumerate}
   \item Solve directly the normal equation
     \begin{equation}

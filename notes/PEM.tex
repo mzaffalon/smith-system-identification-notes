@@ -6,11 +6,11 @@ We assume that the complete system model is given by
   \label{eq:PEM-tf-models}
   y(k) = G(z)u(k) + H(z)e(k).
 \end{equation}
-Prediction error-based identification methods estimate the transfer functions $G(z)$ and $H(z)$ by minimizing the objective function $J(\epsilon)$, a function of the prediction error $\epsilon$
+Prediction error-based identification methods estimate the transfer functions $G(z)$ and $H(z)$ by minimizing the objective function $J(\epsilon)$, a function of the prediction error $\epsilon(k)$
 \begin{equation*}
-  \hat{\epsilon}(k) = y(k) - \hat{y}(k|k-1).
+  \epsilon(k) \doteq y(k) - \hat{y}(k|k-1).
 \end{equation*}
-The prediction $\hat{y}(k|k-1)$ for the time $k$ is a function of the previous measurements $k-1,\ k-2,\ldots$ only.
+The prediction $\hat{y}(k|k-1)$ for the time $k$ is a function of the previous measurements and inputs at $k-1,\ k-2,\ldots$ only.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Prediction}
@@ -30,9 +30,9 @@ We now seek to predict $v(k)$ given the past values up to time $k-1$: this is ca
   \label{eq:prediction-split-filtered-noise}
   v(k) = H(z)e(k) = e(k) + (H(z)-1)e(k)
 \end{equation}
-The \emph{predicted} filtered noise $\hat{v}(k|k-1)$ becomes
+The \emph{predicted} filtered noise $\hat{v}(k|k-1)$ is
 \begin{equation*}
-  \hat{v}(k|k-1) = (H(q)-1)e(k)
+  \hat{v}(k|k-1) = (H(z)-1)e(k).
 \end{equation*}
 This can be intuitively understood because the error probability function distribution for $\{e\}$ has zero mean\footnote{Had the probability distribution $f_e(x)$ not had a zero mean, we would have to modify the predition according to
   \begin{equation*}
@@ -42,7 +42,7 @@ This can be intuitively understood because the error probability function distri
   \label{eq:filtered-noise-one-step-prediction}
   \hat{v}(k|k-1) = \left(1-H^{-1}(z)\right)v(k)
 \end{equation}
-is determined only from the knowledge of the past values of $v(k-i)$ with $i>0$.
+is determined only from the knowledge of the past values of $v$ up to $k-1$.
 
 For the model of eq.~\eqref{eq:PEM-tf-models}, the one-step ahead predictor
 \begin{equation*}
@@ -73,9 +73,9 @@ The model
 \begin{equation*}
   v(k) = e(k) + ce(k-1) \rightarrow H(z) = 1+cz^{-1}
 \end{equation*}
-is invertible when $|c|<1$. The one-step ahead predictor eq.~\eqref{eq:filtered-noise-one-step-prediction} can be expressed in terms of the error $\epsilon(k-1)$ using eq.~\eqref{eq:one-step-ahead-predictor-error}
+is invertible when $|c|<1$. The one-step ahead predictor eq.~\eqref{eq:filtered-noise-one-step-prediction} can be expressed in terms of the error $e(k-1)$ using eq.~\eqref{eq:one-step-ahead-predictor-error}
 \begin{equation*}
-  \hat{v}(k|k-1) = \left(1-H^{-1}(z)\right)H(z)e(k) = cz^{-1}\epsilon(k) =  c\epsilon(k-1)
+  \hat{v}(k|k-1) = \left(1-H^{-1}(z)\right)H(z)e(k) = cz^{-1}e(k) =  ce(k-1)
 \end{equation*}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -94,7 +94,7 @@ from the (one-step ahead) predictor $\hat{y}(k,\theta)$ which is based on the gu
 \begin{equation*}
   \theta^\star = \arg \min_\theta J(\epsilon(k,\theta)).
 \end{equation*}
-Typical choices for the objective functions $J(\epsilon)$ are the 2-norm $||\epsilon||_2^2$ or the maximum deviation, the $\infty$-norm $||\epsilon||_\infty$. The kind of minimization depends on how the models $G(q)$ and $H^{-1}(q)$ are parametrised. In general, the parametrization will not be linear and the optimization may not be convex. Note moreover that the minimization of $||\epsilon||_2^2$ is not equivalent to the least squres method, unless  $H(z)=1$:
+Typical choices for the objective functions $J(\epsilon)$ are the 2-norm $||\epsilon||_2^2$ or the maximum deviation, the $\infty$-norm $||\epsilon||_\infty$. The kind of minimization depends on how the models $G(q)$ and $H^{-1}(q)$ are parametrised: in general, the parametrization will not be linear and the optimization may not be convex. Note moreover that the minimization of $||\epsilon||_2^2$ is not equivalent to the least squres method, unless  $H(z)=1$:
 \begin{equation*}
   y(k) = G(z)u(k) + e(k).
 \end{equation*}
@@ -132,7 +132,7 @@ either by plugging $G(z)$ and $H^{-1}(z)$ in eq.~\eqref{eq:one-step-ahead-predic
 
 While the model covers a limited set of real-world problems (notably those where the perturbation act as a force), the predictor eq.~\eqref{eq:one-step-ahead-ARX} has the advantage of forming the linear regressor
 \begin{equation*}
-  y(k) = \varphi^\top(k)\theta
+  \hat{y}(k,\theta) = \varphi^\top(k)\theta
 \end{equation*}
 the \emph{parameter vector} $\theta$ being the unknown coefficients of the polynomials $A(z)$ and $B(z)$
 \begin{equation*}
@@ -219,6 +219,33 @@ The optimization-based algorithm
 has a non-linear dependence on $\theta$ in the affine constrained.
 
 % MATLAB code? Numerical example shows overfitting
+
+\iffalse
+\begin{lstlisting}[
+style=Matlab-editor,
+basicstyle=\mlttfamily\small]
+
+PhiTyu = [toeplitz(u(1:end-1), [u(1); 0]), ...
+    toeplitz(-y(1:end-1), [-y(1); 0])];
+
+[x,fval] = fmincon(@(x) ARMAXobjective(x),x0, ...
+    [],[],[],[],[],[],@(x)ARMAXconstraint(x,y,PhiTyu));
+
+function f = ARMAXobjective(x) % x = [theta; e]
+f = norm(x(7:end), 2);
+end
+
+function [c,ceq] = ARMAXconstraint(x,y,PhiTyu)
+theta = x(1:6);
+e = x(7:end);
+PhiTe = toeplitz(e(1:end-1), [e(1); 0]);
+ceq = y(2:end) - [PhiTyu, PhiTe] * theta - e(2:end);
+c = [];
+end
+\end{lstlisting}
+\fi
+
+A reference implementation is in \texttt{11\_lect/SysID\_ARMAX.m}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{General Family of Model Structures}

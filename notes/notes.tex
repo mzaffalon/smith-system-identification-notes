@@ -10,6 +10,8 @@
 \usepackage{hyperref}
 \usepackage{booktabs}
 \usepackage{biblatex}
+%\usepackage{csquotes}
+\usepackage{matlab-prettifier}
 
 \date{\today\\\vspace*{2em}\emph{Unreviewed} notes for Prof. Smith's class. Use at own risk!}
 \title{227-0689-00L: System Identification HS2023}
@@ -26,6 +28,7 @@
 \newcommand{\du}{\ensuremath{\mathrm{d}}}
 % \newcommand{\bs}[1]{\boldsymbol{#1}}
 % \newcommand{\bsrm}[1]{\boldsymbol{\mathrm{#1}}}
+\newcommand{\II}{I}
 
 \newcommand{\EE}[1]{\mathbb{E}\left\{#1\right\}}
 \newcommand{\cov}[1]{\textrm{cov}\left(#1\right)}
@@ -37,7 +40,8 @@
 \newcommand{\thetaR}{\hat{\theta}^\textrm{R}}
 
 \newcommand{\taumax}{\tau_\text{max}}
-
+\newcommand{\ejw}{e^{j\omega}}
+\newcommand{\ejwn}{e^{j\omega_n}}
 
 \addbibresource{notes.bib}
 
@@ -52,6 +56,7 @@
 %\include{freq-domain}
 %\include{time-domain}
 \include{PEM}
+%\include{closedloop}
 %\include{exercises.tex}
 
 \printbibliography
