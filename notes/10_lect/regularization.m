@@ -8,7 +8,7 @@ rng(10) % fix the RNG seed
 order = 50;
 G = tf([1,2,1], [1,-1.5,0.56,0],1);
 g = impulse(G, order-1); % determine the true 50 elements of the impulse response
-N = 1000;
+N = 200;
 sigma = 10;
 u = randn(N,1);
 e = sigma * randn(N,1);
@@ -46,7 +46,8 @@ for i = 1:Ngammas
     % residuals without the regularization term). We plot also the
     % regularization term and the full cost function for comparison.
     [res, prederr, regul] = residuals_regLS(M_ridge{i}, u_val, y_val, invKernel);
-    E(i,:) = [res, prederr, regul] / (sigma^2*N_val);
+    % I divide by sigma^2 only because the residuals are not N_val*sigma^2
+    E(i,:) = [res, prederr, regul] / sigma^2;
     [b,c,m] = BCM(g, u_val, invKernel);
     BCE(i,:) = [b,c,m];
 end
@@ -57,7 +58,7 @@ legend("prediction err", "cost func", "regul");
 %nexttile(); semilogx(gammas, E(:,2))
 %legend("prediction err");
 legend("boxoff"); grid("on")
-xlabel("gamma"); ylabel("residuals |Y-\Phi\theta|_2^2")
+xlabel("gamma"); ylabel("residuals |Y-\Phi\theta|_2^2 / \sigma^2")
 
 nexttile(); loglog(gammas, BCE); grid("on")
 xlabel("gamma"); ylabel("contributions"); title("Regularized method: bias, cov and MSE")

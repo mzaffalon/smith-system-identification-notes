@@ -9,3 +9,4 @@ Suggestions and PRs are welcome.
 ## Updates
 
 - 2023-12-14: added closed-loop identification
+- 2023-12-16: added clarification on bias for ARX models

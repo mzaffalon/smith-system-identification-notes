@@ -6,11 +6,11 @@ We assume that the complete system model is given by
   \label{eq:PEM-tf-models}
   y(k) = G(z)u(k) + H(z)e(k).
 \end{equation}
-Prediction error-based identification methods estimate the transfer functions $G(z)$ and $H(z)$ by minimizing the objective function $J(\epsilon)$, a function of the prediction error $\epsilon(k)$
+Prediction error-based identification methods estimate the transfer functions $G(z)$ and $H(z)$, parametrised as $G(z,\theta)$ and $H(z,\theta)$, by minimizing the objective function $J(\epsilon)$, a function of the prediction error $\epsilon(k,\theta)$
 \begin{equation*}
-  \epsilon(k) \doteq y(k) - \hat{y}(k|k-1).
+  \epsilon(k,\theta) \doteq y(k) - \hat{y}(k,\theta).
 \end{equation*}
-The prediction $\hat{y}(k|k-1)$ for the time $k$ is a function of the previous measurements and inputs at $k-1,\ k-2,\ldots$ only.
+The prediction $\hat{y}(k,\theta)$ for the time $k$ is a function of the previous measurements and inputs at $k-1,\ k-2,\ldots$ only.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Prediction}
@@ -18,7 +18,7 @@ The prediction $\hat{y}(k|k-1)$ for the time $k$ is a function of the previous m
 
 We assume that $H(z)$ is monic\footnote{Monic means that $h(0)=1$:
 \begin{equation*}
-  H(q) = 1 + \sum_{k=1}^\infty h(k)q^{-k}.
+  H(z) = 1 + \sum_{k=1}^\infty h(k)z^{-k}.
 \end{equation*}} and stable\footnote{$H(z)$ has only poles strictly inside the unit circle.}. In this case, given the filtered noise $v(k)=H(z)e(k)$, $e(k)$ can be reconstructed from $v(k)$ as
 \begin{equation}
   \label{eq:noise-reconstruction}
@@ -28,7 +28,7 @@ We assume that $H(z)$ is monic\footnote{Monic means that $h(0)=1$:
 We now seek to predict $v(k)$ given the past values up to time $k-1$: this is called the \emph{one-step ahead} estimate. Since $H(z)$ is monic, we split the filtered noise contribution into the term $e(k)$ and other terms up to time $k-1$
 \begin{equation}
   \label{eq:prediction-split-filtered-noise}
-  v(k) = H(z)e(k) = e(k) + (H(z)-1)e(k)
+  v(k) = H(z)e(k) = e(k) + \left(H(z)-1\right)e(k)
 \end{equation}
 The \emph{predicted} filtered noise $\hat{v}(k|k-1)$ is
 \begin{equation*}
@@ -45,26 +45,30 @@ This can be intuitively understood because the error probability function distri
 is determined only from the knowledge of the past values of $v$ up to $k-1$.
 
 For the model of eq.~\eqref{eq:PEM-tf-models}, the one-step ahead predictor
-\begin{equation*}
+\begin{equation}
+  \label{eq:one-step-ahead-predictor-noise}
   \hat{y}(k|k-1) = G(z)u(k) + \hat{v}(k|k-1)
-\end{equation*}
-can be rewritten with the help of the expression for $\hat{v}(k|k-1)$ as
+\end{equation}
+can be rewritten with the help of the expression for $\hat{v}(k|k-1)$ as\footnote{Using $v(k) = y(k) - G(z)u(k)$
+  \begin{equation*}
+    \hat{y}(k|k-1) = G(z)u(k) + \left(1-H^{-1}(z)\right)\left(y(k) - G(z)u(k)\right).
+  \end{equation*}
+Note that $y_0(k)=G(z)u(k)$ is the evolution of the noiseless true system, so that eq.~\eqref{eq:one-step-ahead-predictor-noise} could also be written as $\hat{y}(k|k-1) = y_0(k) + \hat{v}(k|k-1)$. However we seek an expression that involves the measured outputs and expressing the one-step head predictor as a function of the unknown true system is of no use to us.\label{fn:noiseless-regressor}}
 \begin{equation}
   \label{eq:one-step-ahead-predictor}
   \hat{y}(k|k-1) = H^{-1}(z)G(z)u(k) + \left(1-H^{-1}(z)\right) y(k).
 \end{equation}
 The prediction error\footnote{Using eq.~\eqref{eq:one-step-ahead-predictor}
 \begin{align*}
-  \epsilon(k) &= y(k) - \hat{y}(k|k-1) \\
-              &= y(k) - H^{-1}(z)G(z)u(k) - \left(1-H^{-1}(z)\right) y(k) \\
-              &= H^{-1}(z)(y(k) - G(z)u(k)) \\
-              &= H^{-1}(z)v(k) = e(k)
+  y(k) - \hat{y}(k|k-1) &= y(k) - H^{-1}(z)G(z)u(k) - \left(1-H^{-1}(z)\right) y(k) \\
+                        &= H^{-1}(z)(y(k) - G(z)u(k)) \\
+                        &= H^{-1}(z)v(k) = e(k)
 \end{align*}}
 \begin{equation}
   \label{eq:one-step-ahead-predictor-error}
-  \epsilon(k) = y(k) - \hat{y}(k|k-1) = H^{-1}(z)v(k) = e(k)
+  \epsilon(k) = y(k) - \hat{y}(k|k-1) = e(k)
 \end{equation}
-is the noise $e(k)$ that cannot be predicted: the \emph{innovation} is the part of the output prediction that cannot be estimated from past measurements.
+is the noise $e(k)$ that cannot be predicted: the \emph{innovation} is the part of the output prediction that cannot be estimated from past measurements. This result is not really a surprise: it was the term that was discarded from $v(k)$ to compute the predicted noise $\hat{v}(k|k-1)$.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Example: Moving Average}
@@ -86,10 +90,13 @@ The advantage of the transfer-function models is that they can be described by f
 
 If we control the input, this requirement is easy to satisfy. If on the other hand the data is given, this may not be the case and in these situations, one is better off looking for transfer functions/state space representations because of the reduced numbers of parameters to identify.
 
-Prediction error-based identification methods construct the prediction error
-\begin{equation*}
+Prediction error-based identification methods construct the prediction error\footnote{Here we are seeking the unknown parameters $\theta$ for a known model for which we can construct the one-step ahead predictor $\hat{y}(k,\theta)$, parametrized by $\theta$. Since $\theta$ is unknown, we cannot say just yet that $\epsilon(k,\theta) = e(k)$.
+
+  I also do not know if $\min_\theta ||\epsilon(\theta)|| = e$ but I suspect this is the case when $e(k)$ is Gaussian-distributed.}
+\begin{equation}
+  \label{eq:prediction-error-parametrized}
   \epsilon(k,\theta) = y(k) - \hat{y}(k,\theta)
-\end{equation*}
+\end{equation}
 from the (one-step ahead) predictor $\hat{y}(k,\theta)$ which is based on the guesses $\hat{G}(z)=G(z,\theta)$ and $\hat{H}^{-1}(z)=H^{-1}(z,\theta)$, the guesses being parametrized by $\theta$. The optimal $\theta^\star$ is the argument that minimizes the cost function $J=J(\epsilon)$
 \begin{equation*}
   \theta^\star = \arg \min_\theta J(\epsilon(k,\theta)).
@@ -99,7 +106,7 @@ Typical choices for the objective functions $J(\epsilon)$ are the 2-norm $||\eps
   y(k) = G(z)u(k) + e(k).
 \end{equation*}
 
-Since this approach does not require an a-priori knowlege of the system, it is also called \emph{black-box} approach.
+Since this approach does not require an a-priori knowlege of the system, it is also called the \emph{black-box} approach.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Equation Error Model Structure (ARX)}
@@ -107,19 +114,16 @@ Since this approach does not require an a-priori knowlege of the system, it is a
 
 %The numerator is the moving average (MA) part, the denominator the autoregressive (AR) part, X for the exogeraneous (external) input.
 
-The ARX model\footnote{From $y(k) = \frac{B(z)}{A(z)}u(k)$, rearranging the terms
-  \begin{equation*}
-     A(z)y(k) = B(z)u(k) \rightarrow y(k) = B(z)u(k) + (1-A(z))y(k).
-  \end{equation*}}
+The ARX model
 \begin{equation}
   \label{eq:ARX-model}
   y(k) = B(z)u(k) + \left(1-A(z)\right)y(k) + e(k)
 \end{equation}
-is a simple input-output relationship where the error enters as a direct term. We take
+is a simple input-output relationship where the error enters as a direct term: this model covers a limited set of real-world problems, for instance those where the perturbation act as a force. We take
 \begin{equation*}
   A(z) = 1 + a_1z^{-1} + \ldots + a_nz^{-n},\hspace{2em} B(z) = b_1z^{-1} + \ldots + b_mz^{-m}
 \end{equation*}
-note that $A(z)$ is monic and $B(z)$ does not have a constant term, \textit{i.e.} the model has no feed-through. It corresponds to the model of eq.~\eqref{eq:PEM-tf-models} with
+where $A(z)$ is monic and $B(z)$ does not contain a constant term, \textit{i.e.} the model has no feed-through. It corresponds to the model of eq.~\eqref{eq:PEM-tf-models} with
 \begin{equation*}
   G(z) = \frac{B(z)}{A(z)},\hspace{2em}H(z) = \frac{1}{A(z)}.
 \end{equation*}
@@ -128,44 +132,97 @@ and generates the one-step ahead predictor
   \label{eq:one-step-ahead-ARX}
   \hat{y}(k|k-1) = \left(1-A(z)\right)y(k) + B(z)u(k)
 \end{equation}
-either by plugging $G(z)$ and $H^{-1}(z)$ in eq.~\eqref{eq:one-step-ahead-predictor} or by using the result of eq.~\eqref{eq:one-step-ahead-predictor-error} that $\hat{y}(k|k-1) = y(k) - e(k)$ in eq.~\eqref{eq:ARX-model}.
+either by plugging $G(z)$ and $H^{-1}(z)$ in eq.~\eqref{eq:one-step-ahead-predictor} or by using the result of eq.~\eqref{eq:one-step-ahead-predictor-error} in eq.~\eqref{eq:ARX-model}.
 
-While the model covers a limited set of real-world problems (notably those where the perturbation act as a force), the predictor eq.~\eqref{eq:one-step-ahead-ARX} has the advantage of forming the linear regressor
-\begin{equation*}
-  \hat{y}(k,\theta) = \varphi^\top(k)\theta
-\end{equation*}
-the \emph{parameter vector} $\theta$ being the unknown coefficients of the polynomials $A(z)$ and $B(z)$
+We now seek the estimates $\hat{B}(z,\theta)$ and $\hat{A}(z,\theta)$ parametrized by the \emph{parameter vector} $\theta$ which contains the unknown coefficients of the polynomials $A(z)$ and $B(z)$
 \begin{equation*}
   \theta =
   \begin{bmatrix}
     a_1 & \ldots & a_n & b_1 & \ldots & b_m
   \end{bmatrix}^\top
 \end{equation*}
-and the \emph{regressor vector} $\varphi(k)$ being the output and input terms
+This generates the one-step ahead predictor
+\begin{equation*}
+  \hat{y}(k,\theta) = \left(1-\hat{A}(z,\theta)\right)y(k) + \hat{B}(z)u(k).
+\end{equation*}
+that can be written in linear form
 \begin{equation*}
   \varphi^\top(k) =
   \begin{bmatrix}
     -y(k-1) & \ldots & -y(k-n) & u(k-1) & \ldots & u(k-m)
   \end{bmatrix}.
 \end{equation*}
+using the \emph{regressor vector} $\varphi(k)$ that contains the outputs and inputs.
+
+$\theta$ is found by minimization of the prediction error $\epsilon(k,\theta) = y(k) - \hat{y}(k,\theta)$: when $\theta$ is the true parameter vector $\theta_0$, then $\epsilon(k,\theta_0)=e(k)$. Generally, one minimizes the 2--norm $||\epsilon(k,\theta)||_2^2$: this  is solved in MATLAB by
+\begin{equation}
+  \label{eq:ARX-solution}
+  %\Phi\hat{\theta} = Y\rightarrow
+  \hat{\theta} = \Phi \backslash Y,\hspace{2em} \Phi \doteq
+  \begin{bmatrix}
+    \varphi^\top(1) \\ \varphi^\top(2) \\ \ldots \\ \varphi^\top(N)
+  \end{bmatrix}, \hspace{1em} Y \doteq
+  \begin{bmatrix}
+    y(1) \\ y(2) \\ \ldots \\ y(N)
+  \end{bmatrix}
+\end{equation}
+The first element of the regressor is $\varphi(1)$ that depends on the past indeces up to $k=0$: these are the initial conditions. They are usually specified by the system being at rest; otherwise, one must drop a certain amount of entries (how many exactly?)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Estimate Bias}
-\label{sec:estimate-bias-ARMAX}
+\subsection{ARX: Estimate Bias}
+\label{sec:estimate-bias-ARX}
 
-The ARX model structure is applied also to systems that do not have this noise model for the simple reason that it is linear. One must be aware that this induce a bias in the estimates $G(z,\theta^\star) = \tfrac{B(z,\theta^\star)}{A(z,\theta^\star)}$ and $H^{-1}(z,\theta^\star)$, see the numerical example in the slides 9.30.
+The numerical example in class (slides 9-30 to 9--34) confused me. In the first situation we have
+\begin{equation*}
+  \frac{B(z)}{A(z)} = \frac{bz^{-1}}{1 + az^{-1}}, \hspace{2em} H(z)=1.
+\end{equation*}
+The one-step ahead predictor is
+\begin{equation*}
+  \hat{y}(k|k-1) = y(k) - e(k) = \frac{B(z)}{A(z)}u(k) = \varphi_0^\top(k)\theta_0
+\end{equation*}
+is nothing else than the evolution of the true system. The regressor $\Phi_0$ must be constructed from the true $y_0(k) = \frac{B(z)}{A(z)}u(k)$: using instead the measured $y(k)$ gives the bias of slide 9--30.
 
-%The prediction error for this model is
-%\begin{align*}
-%  \epsilon(k,\theta) &= y(k) - \hat{y}(k,\theta) \\
-%  &= \left(A(z,\theta)G(z)-B(z,\theta)\right)u(k) + A(z,\theta)H(z)e(k).
-%\end{align*}
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.8\textwidth]{09_lect/ARX-bias.png}
+  \caption{Comparison of estimates with true and noisy regressors and data for a PRBS input signal with $O=7$ and $N=127$. The estimates start from a minimum regressor length of $10$. The code is in \texttt{09\_lect/SysID\_ARX.m}.}
+  \label{fig:estimate-bias-ARX}
+\end{figure}
+
+In the second situation, we take the noise to be $H(z) = \frac{1}{A(z)}$. In Fig.~\ref{fig:estimate-bias-ARX} I compare the solutions of the least square problems
+\begin{equation*}
+  \hat{\theta}_{tn} \doteq \Phi_0\backslash Y,\hspace{2em} \hat{\theta}_{nn} \doteq \Phi\backslash Y
+\end{equation*}
+as a function of the number of elements in the regressor, just as it was done in class for the first problem. Only by looking at the graph, it is not possible to tell whether an estimate is biased, but repeating the experiment reveals that neither $\hat{\theta}_{nn}$ (as expected) nor $\hat{\theta}_{tn}$ (perhaps unexpectedly) are biased.
+
+The explanation is the following: the (noisy) system's evolution and the parametrised predicted error are
+\begin{align*}
+  y(k) &= (1-A(z))y(k) + B(z)u(k) + e(k) = \varphi^\top(k)\theta_0 + e(k) \\
+  \hat{y}(k,\theta) &= \varphi^\top(k)\theta.
+\end{align*}
+Their difference, the prediction error
+\begin{equation*}
+  y(k)-\hat{y}(k,\theta) = \varphi^\top(k)(\theta_0-\theta) + e(k)
+\end{equation*}
+is minimized when $\theta=\theta_0$ since $e(k)$ has zero mean: this is the case $\Phi\backslash Y$. On the other hand, we can also write
+\begin{equation*}
+  y(k) = y_0(k) + \frac{1}{A(z)}e(k) = \varphi_0^\top(k)\theta_0 + \frac{1}{A(z)}e(k)
+\end{equation*}
+their difference
+\begin{equation*}
+  y(k) - \varphi_0^\top(k)\theta = \varphi_0^\top(k)(\theta_0-\theta) + \frac{1}{A(z)}e(k)
+\end{equation*}
+is minimized when $\theta=\theta_0$ since $\frac{1}{A(z)}e(k)$ has also zero mean. This means
+\begin{equation*}
+  \EE{\Phi\backslash Y} = \EE{\Phi_0\backslash Y} = \theta_0.
+\end{equation*}
+As mentioned already in footnote~\ref{fn:noiseless-regressor}, the noiseless regressor $\Phi_0$ cannot be constructed unless (I think) $H(z)=1$, because $y_0(k)$ evolution coincides with the $\hat{y}(k|k-1)$.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{ARMAX Model Structure}
 \label{sec:ARMAX}
 
-The ARX model structure is not very flexible with regards to the noise model: indeed it requires the noise to have the particular structure\footnote{It has the advantage (together with FIR models) of forming a linear regressor.} $1/A(z)$. The ARMAX transfer function model is in the form
+The ARX model structure is not very flexible with regards to the noise model requiring it to have the particular structure $\frac{1}{A(z)}$. The ARMAX transfer function model partially relaxes this: it has the form
 \begin{equation}
   \label{eq:ARMAX-model}
   A(z)y(k) = B(z)u(k) + C(z)e(k)
@@ -174,25 +231,18 @@ where $A(z)$ and $B(z)$ are as in ARX and $C(z)$ is monic. It corresponds to the
 \begin{equation*}
   G(z) = \frac{B(z)}{A(z)},\hspace{2em} H(z) = \frac{C(z)}{A(z)}
 \end{equation*}
-and with the one-step ahead predictor\footnote{The one-step predictor is more easily obtained by plugging the expressions for $G(z)$ and $H^{-1}(z)$ into eq.~\eqref{eq:one-step-ahead-predictor}.
-
-  Working out the expression directly is cumbersome: by using eq.~\eqref{eq:one-step-ahead-predictor-error} in the model eq.~\eqref{eq:ARMAX-model}, we have
-  \begin{equation*}
-    \hat{y}(k|k-1) = y(k) - e(k) = \frac{B(z)}{A(z)}u(k) + \left(\frac{C(z)}{A(z)}-1\right)e(k).
-  \end{equation*}
-  By plugging in the expression for the noise
-  \begin{equation*}
-    e(k) = C^{-1}(z)(A(z)y(k)) - B(z)u(k))
-  \end{equation*}
-  we obtain
-  \begin{equation*}
-    C(z)\hat{y}(k|k-1) = B(z)u(k) + (C(z)-A(z))y(k).
-  \end{equation*}
-  Some manipulation is still required to bring it into the final form eq.~\eqref{eq:one-step-ahead-ARMAX}.}
+and with the one-step ahead predictor\footnote{In alternative to plugging the expressions for $G(z)$ and $H^{-1}(z)$ into eq.~\eqref{eq:one-step-ahead-predictor}, the one-step ahead predictor can be equally easily obtained from eq.~\eqref{eq:ARMAX-model} and eq.~\eqref{eq:one-step-ahead-predictor-error}:
+  \begin{align*}
+    \hat{y}(k|k-1) &= y(k) - e(k) \\
+                   &=\left(1-A(z)\right)y(k) + B(z)u(k) + \left(C(z)-1\right)e(k) \\
+                   &= \left(1-A(z)\right)y(k) + B(z)u(k) + \left(C(z)-1\right)\left(y(k)-\hat{y}(k|k-1)\right).
+  \end{align*}
+  Consistency check: this expression reduces to ARX one-step ahead predictor eq.~\eqref{eq:one-step-ahead-ARX} when $C(z)=1$.}
 \begin{equation}
   \label{eq:one-step-ahead-ARMAX}
-  \hat{y}(k|\theta) = (1-A(z))y(k) + B(z)u(k) + (C(z)-1)\underbrace{(y(k)-\hat{y}(k|\theta))}_{\doteq \epsilon(k,\theta)}.
+  \hat{y}(k|k-1) = (1-A(z))y(k) + B(z)u(k) + (C(z)-1)\left(y(k)-\hat{y}(k|k-1)\right)
 \end{equation}
+
 Introducing the regression vector
 \begin{equation*}
   \varphi^\top(k,\theta) =
@@ -201,22 +251,23 @@ Introducing the regression vector
   \end{bmatrix}
 \end{equation*}
 eq.~\eqref{eq:one-step-ahead-ARMAX} induces the pseudolinear regression
-\begin{equation*}
-  \hat{y}(k,\theta) = \varphi^\top(k,\theta) \theta.
-\end{equation*}
+\begin{equation}
+  \label{eq:pseudolinear-regression-ARMAX}
+  \hat{y}(k,\theta) = \varphi^\top(k,\theta) \theta
+\end{equation}
+the equation is non-linear because the unknown appears also in the regressor $\varphi^\top(k,\theta)$.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Constrained Minimization}
 \label{sec:ARMAX-minimization}
 
-The optimization-based algorithm
+Using eq.~\eqref{eq:pseudolinear-regression-ARMAX} and eq.~\eqref{eq:prediction-error-parametrized}, we have that $y(k) = \varphi^\top(k,\theta) \theta + \epsilon(k,\theta)$: this is used as the constraint in the optimization-based algorithm for the solution to the ARMAX problem:
 \begin{equation*}
   \begin{aligned}
-    \min_{\theta,\epsilon}\ & ||\epsilon||_2 \\
+    \min_{\theta,\epsilon}\ & ||\epsilon||_2^2 \\
     \textrm{subject to } & Y = \Phi(\epsilon)\theta + \epsilon
-  \end{aligned}
+  \end{aligned}.
 \end{equation*}
-has a non-linear dependence on $\theta$ in the affine constrained.
 
 % MATLAB code? Numerical example shows overfitting
 
