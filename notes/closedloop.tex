@@ -1,0 +1,229 @@
+\chapter{Closed-Loop Identification}
+\label{chap:closed-loop-identification}
+
+
+There are reasons to use system identification in closed loop:
+\begin{itemize}
+\item an unstable system must be operated in closed-loop. A simple controller stabilizes the system, but one may want to have a better model to improve the performance or because the system may change with time;
+\item operational constraints may require closed-loop: \textit{e.g.} an operational industrial process cannot run in open loop for the purpose of identification because the specs on the final product must still be met;
+\item closed-loop controller maintains the system close to the operating point of interest (the system may be non-linear and closed loop linearizes it);
+\item this emphasizes plant dynamics close to the cross-over frequency range by removing a possibly large-scale zero-frequency response which is easy to control with a slow controller.
+\end{itemize}
+In open-loop, system identification can be performed in the frequency and time domain. In frequency domain for instance the estimate
+\begin{equation*}
+  \hat{G}(\ejwn) = \frac{\hat{Y}}{\hat{U}}
+\end{equation*}
+with
+\begin{align*}
+  \textrm{bias:}\hspace{1em} & \EE{\hat{G}(\ejwn) - G(\ejwn)} \longrightarrow 0 as  \\
+  \textrm{variance:}\hspace{1em} & \EE{|\hat{G}(\ejwn) - G(\ejwn)|^2} \longrightarrow \frac{\phi_v(\ejwn)}{\phi_u(\ejwn)}
+\end{align*}
+as $N\rightarrow 0$. In closed-loop, the identification results may not be as good.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Methods for Closed-Loop Identification}
+\label{sec:methods-closed-loop}
+
+
+The fundamental assumption to derive the results until now was that control input $u$ and noise $e$ were uncorrelated: $\phi_{ue}(\ejw) = 0$. In closed-loop this is no longer the case: the noise on the output is seen at the input through the feedback loop.
+
+For identification, we assume
+\begin{itemize}
+\item a generalized reference $r(k) = r_2(k) + C(z)r_1(k)$;
+\item $y(k)$ and $u(k)$ are available;
+\item $C(z)$ stabilize the system and makes it internally stable: that is, all transfer functions (the Gang of Four)
+\begin{equation*}
+  \frac{GC}{1+GC},\ \frac{G}{1+GC},\ \frac{C}{1+GC},\ \frac{1}{1+GC}
+\end{equation*}
+are stable.
+\end{itemize}
+
+There are four main methods for closed-loop identification:
+\begin{itemize}
+\item direct methods;
+\item indirect methods;
+\item joint input-output methods;
+\item dual-Youla parametrization.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Direct Methods}
+\label{sec:direct-methods}
+
+It applies the basic prediction error method Sect. in a straightforward manner: use the output $y$ of the process and the input $u$ in the same way as for open loop operation, ignoring any possible feedback, and not using the reference signal $r$. The method works regardless of the complexity of the regulator and requires no knowledge about the character of the feedback~\cite{ljung}.
+
+The closed loop transfer functions are
+\begin{equation*}
+  %\label{eq:closed-loop-tf}
+  \begin{aligned}
+    y &= SGr + Sv \\
+    u &= Sr - SCv
+  \end{aligned}
+\end{equation*}
+where $S(\ejw)$ is the stable sensitivity function for the closed loop system
+\begin{equation*}
+  S(\ejw) = \frac{1}{1+C(\ejw)G_0(\ejw)}.
+\end{equation*}
+Using spectral analysis\footnote{One more time, I have the impression that the result could have equally well been expressed in terms of ETFE without the need of using the correlations.}, and assuming $\phi_{rv}=0$, we have that
+\begin{align*}
+  \hat{\phi}_{yu}(\ejw) &= |S|^2G\phi_r - |S|^2\bar{C}\phi_v \\
+  \hat{\phi}_u(\ejw) &= |S|^2\phi_r - |S|^2|C|^2\phi_v.
+\end{align*}
+The direct method estimates $G$ directly from $\hat{\phi}_{yu}$ and $\hat{\phi}_u$:
+\begin{equation*}
+  \hat{G}(\ejw) = \frac{\hat{\phi}_{yu}(\ejw)}{\hat{\phi}_u(\ejw)} = \frac{G\phi_r - \bar{C}\phi_v}{\phi_r - |C|^2\phi_v}
+\end{equation*}
+which converges to $G$ when the contribution from the reference signal dominates the noise.
+
+The simplification of $|S|^2$ hides the fact that for frequencies for which $|S|^2\sim 0$, \textit{e.g.} when the loop transfer function $C(z)G(z)$ contains an integrator $\sim s^{-1}$, the measured signals $\hat{\phi}_{yu}$ and $\hat{\phi}_u$ are zero. On the other hand, in every practical control system with tracking, $S$ has a bump at around the closed loop BW (is this true?): those are the frequencies that get emphasized and are relevant for the stability.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Indirect Methods}
+\label{sec:indirect-methods}
+
+It identifies the closed loop transfer function\footnote{In class the method was described in the frequency domain; Ljung does it in the time-domain.} $T_{yr}(z)$ from reference input $r(k)$ to output $y(k)$, and retrieve from that the open loop system, making use of the knowledge of the regulator $C(z)$~\cite{ljung}.
+
+Given the closed loop system
+\begin{equation*}
+  y(k) = T_{yr}(z)r(k) + v_{cl}(k) = \frac{G(z)}{1+G(z)C(z)}r(k) + \frac{1}{1+G(z)C(z)}v(k)
+\end{equation*}
+the open loop transfer function estimate $\hat{G}(z)$ is retrieved from
+\begin{equation*}
+  T_{yr}(z) = \frac{\hat{G}(z)}{1+\hat{G}(z)C(z)}.
+\end{equation*}
+Only the estimate $T_{yr}(z)$ is asymptotically unbiased because the reference $r$ is known; $\hat{G}$ (probably) does not converge to $G$ because the transformation is non-linear which does not preserve the mean.
+
+The advantage with the indirect method is that any idenfication method can be applied to estimate $T_{yr}(z)$. On the other hand, any error in the knowledge of $C(z)$ will be reflected in $\hat{G}(z)$.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Joint Input-Output Methods}
+\label{sec:joint-input-output-methods}
+
+It relies on independent measurements of $y$ and $u$
+\begin{equation*}
+  \begin{aligned}
+    y &= SGr + Sv = T_{yr}r + Sv \\
+    u &= Sr - SCv = T_{ur}r - SCv
+  \end{aligned}
+\end{equation*}
+so that their noise is uncorrelated, to estimate (asymptotically unbiased) $\hat{T}_{yr}(z)$ and $\hat{T}_{ur}(z)$; their noise is also uncorrelated. Since
+\begin{equation*}
+  \frac{T_{yr}}{T_{ur}} = \frac{SG}{S} = G
+\end{equation*}
+the estimate for $\hat{G}$ follows as the ratio
+\begin{equation*}
+  \hat{G}(z) = \frac{\hat{T}_{yr}(z)}{\hat{T}_{ur}(z)}.
+\end{equation*}
+As before, since the estimated spectra are weighted by $S$ or $S(z)C(z)$ and $S$ may become small, some frequencies may not be reliably resolved when taking the ratio. Key points:
+\begin{itemize}
+\item $\hat{G}$ may not be unbiased (unless the input signal is periodic?);
+\item the noise enters in a complicated manner;
+\item one key advantage: $C$ does not need to be known.
+\end{itemize}
+
+This method can be seen as the specific case of a more general framework~\cite[Sect.~13.5]{ljung} that works also for large interconnected systems, where there is no measurable reference $r$ (\textit{e.g.} large interconnected systems where it is also not possible to model the controller). The model is
+\begin{equation*}
+  \begin{aligned}
+    y &= GS(r+w) + Sv= G_{cl}r + v_1 \\
+    u &= S(r+w) - CSv = T_{ru}r + v_2
+  \end{aligned}
+\end{equation*}
+When including the correlations between $v_1 = Sv + GSw$ and $v_2 = -CSv + Sw$ gives
+\begin{equation*}
+  \begin{bmatrix}
+    y \\ u
+  \end{bmatrix} = \mathcal{G}r + \mathcal{H}v.
+\end{equation*}
+When instead the correlations are ignored gives the method described at the beginning of this section.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Dual-Youla Methods}
+\label{sec:dual-youla-methods}
+
+It relies on coprime factorization of transfer functions
+\begin{equation*}
+  G(s) = \frac{N_0(s)}{D_0(s)}
+\end{equation*}
+where $N_0(s)$ and $D_0(s)$ are stable and have no common zeros.
+
+The Bezout identity states that $N_0(s)$ and $D_0(s)$ are coprime iff there exists $U$ and $V$ such that
+\begin{equation*}
+  UN_0 + VD_0 = I.
+\end{equation*}
+A coprime factorization is ``normalised'' if
+\begin{equation*}
+  D_0^*D_0 + N_0^*N_0 = I.
+\end{equation*}
+The MATLAB command is \texttt{sncfbal}.
+
+The Youla parametrisation is a way of parametrize all stable controllers: given a controller $C_0=\frac{X_0}{Y_0}$ with $X_0$, $Y_0$ a coprime factorization and stable (an integral controller would not work) which stabilizes $G_0$, all controllers $C$ stabilizing $G_0 = N_0/D_0$ have the form
+\begin{equation*}
+  C_Q = \frac{X_0+QD_0}{Y_0-QN_0}
+\end{equation*}
+with $Q$ stable.
+
+The dual Youla parametrization method takes the opposite route: given the known controller $C$ that stabilizes the system, the plant $G$ must be one of those that can be stabilized by $C$. The problem can be therefore formulated as a search on stable\footnote{In class we used $R$ as the stable search transfer function, but $R$ was used for the transient in frequency-domain and $r$ for the closed-loop reference in time-domain. To avoid confusion, I use $Q$.} $Q$: find the estimate $\hat{G}$ from the set of all plants stabilized by $C(s)$. %$\hat{G}$ is automatically
+
+We model the open-loop system as
+\begin{equation}
+  \label{eq:dual-youla-model-open-loop}
+  y(k) = \frac{N}{D}u(k) + \frac{F}{D}e(k) \rightarrow Dy = Nu + Fe
+\end{equation}
+with $F$ stable and stably invertible\footnote{I guess this means all zeros and poles strictly inside the unit circle.}. Let $C_0=\frac{X_0}{Y_0}$ any stabiling controller: the choice of $X_0$, $Y_0$ makes a difference only from a numerical point of view. The parametrization gives
+\begin{equation*}
+  G_Q = \frac{N}{D} = \frac{N_0+QY_0}{D_0-QX_0},\hspace{2em} H_{Q,F} = \frac{F}{D} = \frac{F}{D_0-QX_0}
+\end{equation*}
+The equivalent open loop identification experiment is obtained by rewriting eq.~\ref{eq:dual-youla-model-open-loop} as
+\begin{equation*}
+  (D_0-QX_0)y = (N_0+QY_0)u + Fe %\rightarrow D_0y-N_0u = Q(X_0y+Y_0u) + Fe
+\end{equation*}
+or equivalently, after rearranging the terms, as
+\begin{equation*}
+  \begin{aligned}
+    \beta &\doteq D_0y-N_0u \\
+    \alpha &\doteq X_0y+Y_0u = X_0\left(y + \frac{Y_0}{X_0}u\right) = X_0r \\
+    \beta &= Q\alpha + Fe.
+  \end{aligned}
+\end{equation*}
+where the quantity $r = y + \frac{Y_0}{X_0}u$ is the reference signal $r$.
+
+As it is written, this is an open-loop since there is no feedback between $\beta$ and $\alpha$. The procedure for the dual-Youla method is the following: given a stabilizing controller $C_0$
+\begin{itemize}
+\item factorise $C_0 = X_0/Y_0$;
+\item choose the excitation $r$;
+\item run closed-loop experiments with $C_0$, measuring $y$ and $u$.
+\item choose an initial model, $G_0 = \frac{N_0}{D_0}$ (must be stabilised by $C_0$);
+\item filter the measurements, $\beta = D_0y - N_0u$ (time or frequency domain);
+\item filter the excitation $\alpha = Y_0r$;
+\item estimate $\hat{Q}$ and $\hat{F}$ from $\beta = Q\alpha + Fe$;
+\item calculate the plant estimate $\hat{G} = (N_0+\hat{Q}Y_0)(D_0 - \hat{Q}X_0)$.
+\end{itemize}
+
+\iffalse
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Ratio of Distributions}
+\label{sec:ratios}
+
+if no reference the estimate is the controller. Taking more data does not help (why?)
+
+Ratio distributions
+
+What is the problem with the statistics?
+
+X and Y are stochastics independent and uncorrlated variables: what is $X/Y$? The proble is because $\EE{\frac{1}{Y}} \neq \frac{1}{\EE{Y}}$
+
+The Cauchy distribution is
+\begin{equation*}
+  \frac{1}{\pi}
+\end{equation*}
+but it does not have the mean value $\int z f(z)\du z$
+
+Bias should not be used but rather consistency when there is a non-linear transofrmation
+
+When taking more data, the probability of hitting the zero at the denominator is small. The right question is what is the probabilty of making an error larger than a specified $\epsilon$.
+\fi
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "notes"
+%%% End:

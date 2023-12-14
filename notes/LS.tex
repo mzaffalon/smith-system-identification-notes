@@ -15,7 +15,7 @@ where $\tilde{Y} = \begin{bmatrix}
   v_0 & \ldots & v_{N-1}
 \end{bmatrix}^\top$ has zero mean $\EE{\tilde{\epsilon}}=0$ and covariance\footnote{Note also that while the matrix $vv^\top$ has rank 1, the noise covariance matrix $R$ for Gaussian distributed white noise is full rank because it is the sum of random vectors that span the whole space.} $\EE{\tilde{\epsilon}\tilde{\epsilon}^\top}=R$, a symmetric positive definite matrix.
 
-The maximum likelihood (ML) probability\footnote{What is the expectation value of eq.~\eqref{eq:LS-problem}? Using eq.~\eqref{eq:thetaLS-estimate}
+The maximum likelihood (ML) probability\footnote{The expectation value of eq.~\eqref{eq:LS-problem} is $N-p$. This can be seen using eq.~\eqref{eq:thetaLS-estimate}
   \begin{equation*}
     Y-\Phi\thetaLS = (\Phi\theta_0 + e) - \Phi\left(\theta_0 + K \Phi^\top e\right) = \left(I - \Phi K \Phi^\top\right)e.
   \end{equation*}
