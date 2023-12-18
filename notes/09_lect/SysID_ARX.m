@@ -64,10 +64,8 @@ y = y_true + lsim(H2, e);
 Phi = make_Phi(y,1,u,1);
 
 thetas_inc = zeros(N-1,4);
-for i = 5:N-1
-    %theta_tt = Phi_true(1:i,:) \ y_true(2:i+1);
+for i = 10:N-1
     theta_tn = Phi_true(1:i,:) \ y(2:i+1);
-    %theta_nt = Phi(1:i,:) \ y_true(2:i+1);
     theta_nn = Phi(1:i,:) \ y(2:i+1);
     thetas_inc(i,:) = [theta_tn', theta_nn'];
 end
@@ -85,34 +83,6 @@ nexttile; hold("on"); plot(10:N-1, thetas_inc(10:end,1:2:end), "-", "LineWidth",
 legend("$\hat{\theta}_{tn}$", "$\hat{\theta}_{nn}$", "a", ...
     "Location","southeast", "Interpreter","latex")
 legend("boxoff"); title("a"); xlim([0,N]); xlabel("length of regressor")
-
-%% same as above but with an arbitrary number of coefficients
-
-% B = [0.4, -0.2];
-% A = [1, 0.7, 0.6];
-% m = length(B);
-% n = length(A)-1;
-% G = tf(B, A, 1);
-% H = tf(1, A, 1);
-% y_true = lsim(G,u);
-% 
-% Phi_true = make_Phi(y_true,n,u,m);
-% 
-% thetas_fin = zeros(Niter,2*(n+m));
-% for i = 1:Niter
-%     e = sigma * randn(N,1);
-%     y = y_true + lsim(H, e);
-%     Phi = make_Phi(y,n,u,m);
-% 
-%     theta_tn = Phi_true \ y(2:end);
-%     theta_nn = Phi \ y(2:end);
-%     thetas_fin(i,:) = [theta_tn', theta_nn'];
-% end
-% 
-% disp("means")
-% disp(mean(thetas_fin))
-% disp("std")
-% disp(std(thetas_fin))
 
 %% private functions
 

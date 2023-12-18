@@ -7,7 +7,7 @@ format compact
 rng(10) % fix the RNG seed
 order = 50;
 G = tf([1,2,1], [1,-1.5,0.56,0],1);
-g = impulse(G, order-1); % determine the true 50 elements of the impulse response
+g = impulse(G, order); % determine the true 51 elements of the impulse response
 N = 200;
 sigma = 10;
 u = randn(N,1);
@@ -28,8 +28,8 @@ y_id  = y(1:N_id);
 u_val = u(N_id+1:end);
 y_val = y(N_id+1:end);
 
-thetaLS = solve_regLS(u, y, 50, 0);
-figure(); stem(0:order-1, g); hold("on"); stem(0:order-1, thetaLS)
+thetaLS = solve_regLS(u, y, order+1, 0);
+figure(); stem(0:order, g); hold("on"); stem(0:order, thetaLS)
 xlabel("coefficient index"); ylabel("amplitude"); title("true impulse response vs LS estimate")
 
 %%
@@ -40,8 +40,8 @@ M_ridge = cell(Ngammas,1);
 E = zeros(Ngammas,3);
 BCE = zeros(Ngammas,3);
 for i = 1:Ngammas
-    invKernel = gammas(i)*eye(order);
-    M_ridge{i} = solve_regLS(u_id, y_id, order, invKernel);
+    invKernel = gammas(i)*eye(order+1);
+    M_ridge{i} = solve_regLS(u_id, y_id, order+1, invKernel);
     % to choose the optimal gamma, we rely on the prediction error (the
     % residuals without the regularization term). We plot also the
     % regularization term and the full cost function for comparison.

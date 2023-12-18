@@ -53,22 +53,17 @@ can be rewritten with the help of the expression for $\hat{v}(k|k-1)$ as\footnot
   \begin{equation*}
     \hat{y}(k|k-1) = G(z)u(k) + \left(1-H^{-1}(z)\right)\left(y(k) - G(z)u(k)\right).
   \end{equation*}
-Note that $y_0(k)=G(z)u(k)$ is the evolution of the noiseless true system, so that eq.~\eqref{eq:one-step-ahead-predictor-noise} could also be written as $\hat{y}(k|k-1) = y_0(k) + \hat{v}(k|k-1)$. However we seek an expression that involves the measured outputs and expressing the one-step head predictor as a function of the unknown true system is of no use to us.\label{fn:noiseless-regressor}}
+Note that $y_0(k)=G(z)u(k)$ is the evolution of the noiseless true system, so that eq.~\eqref{eq:one-step-ahead-predictor-noise} could also be written as $\hat{y}(k|k-1) = y_0(k) + \hat{v}(k|k-1)$. However we seek an expression that involves the measured outputs $y(k)$ and expressing the one-step head predictor as a function of the unknown true system is of no use to us.\label{fn:noiseless-regressor}}
 \begin{equation}
   \label{eq:one-step-ahead-predictor}
   \hat{y}(k|k-1) = H^{-1}(z)G(z)u(k) + \left(1-H^{-1}(z)\right) y(k).
 \end{equation}
-The prediction error\footnote{Using eq.~\eqref{eq:one-step-ahead-predictor}
-\begin{align*}
-  y(k) - \hat{y}(k|k-1) &= y(k) - H^{-1}(z)G(z)u(k) - \left(1-H^{-1}(z)\right) y(k) \\
-                        &= H^{-1}(z)(y(k) - G(z)u(k)) \\
-                        &= H^{-1}(z)v(k) = e(k)
-\end{align*}}
+The prediction error\footnote{Although in class the algebra was worked out, that $\epsilon(k|k-1)=e(k)$ is no surprise: $e(k)$ was the term that was discarded from $v(k)$ to compute the predicted filtered noise $\hat{v}(k|k-1)$.}
 \begin{equation}
   \label{eq:one-step-ahead-predictor-error}
-  \epsilon(k) = y(k) - \hat{y}(k|k-1) = e(k)
+  \epsilon(k,|k-1) = y(k) - \hat{y}(k|k-1) = e(k)
 \end{equation}
-is the noise $e(k)$ that cannot be predicted: the \emph{innovation} is the part of the output prediction that cannot be estimated from past measurements. This result is not really a surprise: it was the term that was discarded from $v(k)$ to compute the predicted noise $\hat{v}(k|k-1)$.
+is the noise $e(k)$: the \emph{innovation} is the part of the output prediction that cannot be estimated from past measurements.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Example: Moving Average}
@@ -92,7 +87,7 @@ If we control the input, this requirement is easy to satisfy. If on the other ha
 
 Prediction error-based identification methods construct the prediction error\footnote{Here we are seeking the unknown parameters $\theta$ for a known model for which we can construct the one-step ahead predictor $\hat{y}(k,\theta)$, parametrized by $\theta$. Since $\theta$ is unknown, we cannot say just yet that $\epsilon(k,\theta) = e(k)$.
 
-  I also do not know if $\min_\theta ||\epsilon(\theta)|| = e$ but I suspect this is the case when $e(k)$ is Gaussian-distributed.}
+  I also do not know if $\min_\theta ||\epsilon(\theta)||_2^2 = \sum_k ||e(k)||_2^2$ but I suspect this is the case when $e(k)$ is Gaussian-distributed.}
 \begin{equation}
   \label{eq:prediction-error-parametrized}
   \epsilon(k,\theta) = y(k) - \hat{y}(k,\theta)
@@ -180,7 +175,7 @@ The one-step ahead predictor is
 \begin{equation*}
   \hat{y}(k|k-1) = y(k) - e(k) = \frac{B(z)}{A(z)}u(k) = \varphi_0^\top(k)\theta_0
 \end{equation*}
-is nothing else than the evolution of the true system. The regressor $\Phi_0$ must be constructed from the true $y_0(k) = \frac{B(z)}{A(z)}u(k)$: using instead the measured $y(k)$ gives the bias of slide 9--30.
+is nothing else than the evolution of the true system. The regressor $\Phi_0$ must be constructed from the true $y_0(k) = \frac{B(z)}{A(z)}u(k)$: using instead the measured $y(k)$ gives the bias of slide 9--30. (See also discussion in Sect.~\ref{sec:estimation-bias}.)
 
 \begin{figure}[h]
   \centering
@@ -195,28 +190,27 @@ In the second situation, we take the noise to be $H(z) = \frac{1}{A(z)}$. In Fig
 \end{equation*}
 as a function of the number of elements in the regressor, just as it was done in class for the first problem. Only by looking at the graph, it is not possible to tell whether an estimate is biased, but repeating the experiment reveals that neither $\hat{\theta}_{nn}$ (as expected) nor $\hat{\theta}_{tn}$ (perhaps unexpectedly) are biased.
 
-The explanation is the following: the (noisy) system's evolution and the parametrised predicted error are
-\begin{align*}
-  y(k) &= (1-A(z))y(k) + B(z)u(k) + e(k) = \varphi^\top(k)\theta_0 + e(k) \\
-  \hat{y}(k,\theta) &= \varphi^\top(k)\theta.
-\end{align*}
-Their difference, the prediction error
+The explanation is the following: the (noisy) system's evolution is
+\begin{equation*}
+  y(k) = (1-A(z))y(k) + B(z)u(k) + e(k) = \varphi^\top(k)\theta_0 + e(k)
+\end{equation*}
+and I \emph{pick}\footnote{The word ``pick'' is emphasized: it is the true predictor but, at least for ARX, it seems to me that the most convenient predictor for the solution of the least-squares is whatever regressor the true system uses.} the one-step ahead predictor to be $\hat{y}(k,\theta) = \varphi^\top(k)\theta$. Their difference
 \begin{equation*}
   y(k)-\hat{y}(k,\theta) = \varphi^\top(k)(\theta_0-\theta) + e(k)
 \end{equation*}
-is minimized when $\theta=\theta_0$ since $e(k)$ has zero mean: this is the case $\Phi\backslash Y$. On the other hand, we can also write
+is minimized when $\theta=\theta_0$ since $e(k)$ is Gaussian distributed: this is the case $\Phi\backslash Y$. On the other hand, we can also write
 \begin{equation*}
   y(k) = y_0(k) + \frac{1}{A(z)}e(k) = \varphi_0^\top(k)\theta_0 + \frac{1}{A(z)}e(k)
 \end{equation*}
-their difference
+and I \emph{choose}\footnote{ As mentioned already in footnote~\ref{fn:noiseless-regressor}, the noiseless regressor $\Phi_0$ cannot be constructed from the noisy data unless (I think) $H(z)=1$ when $\hat{y}(k|k-1)=y_0(k)$.} the predictor to be $\hat{y}(k,\theta) = \varphi_0^\top(k)\theta$. Their difference
 \begin{equation*}
   y(k) - \varphi_0^\top(k)\theta = \varphi_0^\top(k)(\theta_0-\theta) + \frac{1}{A(z)}e(k)
 \end{equation*}
-is minimized when $\theta=\theta_0$ since $\frac{1}{A(z)}e(k)$ has also zero mean. This means
+is also minimized when $\theta=\theta_0$ since $\frac{1}{A(z)}e(k)$ has Gaussian distribution (although it is now correlated). This means
 \begin{equation*}
-  \EE{\Phi\backslash Y} = \EE{\Phi_0\backslash Y} = \theta_0.
+  \EE{\Phi\backslash Y} = \EE{\Phi_0\backslash Y} = \theta_0
 \end{equation*}
-As mentioned already in footnote~\ref{fn:noiseless-regressor}, the noiseless regressor $\Phi_0$ cannot be constructed unless (I think) $H(z)=1$, because $y_0(k)$ evolution coincides with the $\hat{y}(k|k-1)$.
+are both unbiased.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{ARMAX Model Structure}
@@ -237,6 +231,8 @@ and with the one-step ahead predictor\footnote{In alternative to plugging the ex
                    &=\left(1-A(z)\right)y(k) + B(z)u(k) + \left(C(z)-1\right)e(k) \\
                    &= \left(1-A(z)\right)y(k) + B(z)u(k) + \left(C(z)-1\right)\left(y(k)-\hat{y}(k|k-1)\right).
   \end{align*}
+  This operation only makes sense when $H(z)$ is stably invertible though: at least $C(z)$ cannot have unstable zeros.
+
   Consistency check: this expression reduces to ARX one-step ahead predictor eq.~\eqref{eq:one-step-ahead-ARX} when $C(z)=1$.}
 \begin{equation}
   \label{eq:one-step-ahead-ARMAX}
@@ -256,6 +252,8 @@ eq.~\eqref{eq:one-step-ahead-ARMAX} induces the pseudolinear regression
   \hat{y}(k,\theta) = \varphi^\top(k,\theta) \theta
 \end{equation}
 the equation is non-linear because the unknown appears also in the regressor $\varphi^\top(k,\theta)$.
+
+Since the regressor is pseudolinear, using non-linear least-squares to estimate $\theta$ will result in a biased estimate (why exactly?).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Constrained Minimization}
@@ -325,6 +323,33 @@ Some of the common cases that we have seen so far are summarized in Table~\ref{t
   \caption{Some common black-box SISO models using the polynomials of eq.~\eqref{eq:general-family-models}.}
   \label{tbl:black-box-models}
 \end{table}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Known Noise Model (with AR Noise Dynamics)}
+\label{sec:known-noise-model}
+
+This was addressed in the exercises but I did not understand it fully. If the noise model $L(z)$ is known
+\begin{equation*}
+  y(k) = \frac{B(z)}{A(z)}u(k) + \frac{L(z)}{A(z)}e(k)
+\end{equation*}
+provided $L(z)$ is stably invertible, by letting $y_L(k)\doteq L^{-1}(z)y(k)$ and $u_L(k)\doteq L^{-1}(z)u(k)$, one obtains the standard ARX form
+\begin{align*}
+  y_L(k) &= \frac{B(z)}{A(z)}u_L(k) + \frac{1}{A(z)}e(k) \\
+  \hat{y}_L(k|k-1) &= \underbrace{\left(1-A(z)\right)y_L(k) + B(z)u_L(k)}_{\Phi_L\theta_0}
+\end{align*}
+for which, as usual, $y_L(k) - \hat{y}_L(k|k-1) = e(k)$. The estimate is obtained by least-squares minimization of the prediction error $y_L(k) - \hat{y}_L(k,\theta)$. In terms of $y(k)$, the prediction error
+\begin{equation*}
+  y(k) - L(z)\hat{y}_L(k|k-1) = L(z)e(k)
+\end{equation*}
+is the filtered error $L(z)e(k)$ but since filtered Gaussian noise is still Gaussian, the estimate remains unbiased.
+
+If one were to use eq.~\eqref{eq:one-step-ahead-predictor} to compute the one-step ahead predictor for which the prediction error is $e(k)$, one would obtain the linear expression $\Phi_L\theta_0$ plus an offset term
+\begin{align*}
+  \hat{y}(k|k-1) &= \frac{B(z)}{L(z)}u(k) + \frac{L(z)-A(z)}{L(z)}y(k) \\
+                 &= B(z)u_L(k) + \left(L(z)-A(z)\right)y_L(k) \\
+                 &= \underbrace{\left(1-A(z)\right)y_L(k) + B(z)u_L(k)}_{\Phi_L\theta_0} + \left(L(z)-1\right)y_L(k)
+\end{align*}
+which must be subtracted from $y(k)$. The additional cost is the computation of the offset term $\texttt{lsim(L-1, Y\_L)}$.
 
 %%% Local Variables:
 %%% mode: latex

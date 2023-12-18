@@ -1,17 +1,11 @@
 \chapter{Regularized FIR Models}
 \label{chap:regularised-FIR-models}
 
-We have seen that the solution $\thetaLS$ of the least squares problem eq.~\eqref{eq:LS-problem}
+In Sect.~\ref{sec:bias-variance-MSE-LS-estimation}, we have seen that the solution
 \begin{equation*}
-  \arg\min_\theta ||Y-\Phi \theta||_2^2
+  \thetaLS = \arg\min_\theta ||Y-\Phi \theta||_2^2
 \end{equation*}
-is unbiased, see Sect.~\ref{sec:bias-variance-MSE-LS-estimation}.
-
-We can however choose to have a biased estimate to reduce the mean square error
-\begin{equation*}
-  \MSE{\hat{\theta}} = E{||\hat{\theta}-\theta_0||_2^2}.
-\end{equation*}
-This can be achieved if we modify the minimization problem by adding a regularization term
+of the least squares problem is unbiased. We can however choose to have a biased estimate to reduce the mean square error $\EE{||\hat{\theta}-\theta_0||_2^2}$. This can be achieved if we modify the minimization problem by adding a regularization term
 \begin{equation}
   \label{eq:regularized-LS}
   ||Y-\Phi \theta||_2^2 + \gamma \theta^\top P^{-1}\theta
@@ -33,7 +27,19 @@ The closed form mathematical solution to eq.~\eqref{eq:regularized-LS} is given 
 \subsection{The James-Stein Estimator}
 \label{sec:james-stein-estimator}
 
-The James-Stein estimator was the first biased estimator that had a smaller MSE compared to least squares on all the ~\cite[page~3]{pillonetto}. It can be cast into a ridge regression problem
+For the problem $Y=\theta_o+e$, the James-Stein estimator is a biased estimator that has a smaller MSE\footnote{I am not sure whether the James-Stein estimator is obtained by minimizing the MSE. We have $\thetaJS = (1-r)\thetaLS = (1-r)(\theta_0+e)$; the MSE is
+  \begin{align*}
+    \EE{(\thetaJS-\theta_0)(\thetaJS-\theta_0)^\top} = (1-r)^2||\theta_0||_2^2 + r^2\underbrace{\EE{||e||_2^2}}_{=N\sigma^2}
+  \end{align*}
+  which has a minimum at
+  \begin{equation*}
+    r = \frac{N\sigma^2}{||\theta_0||^2+N\sigma^2}.
+  \end{equation*}
+  We also have the identity $\EE{||Y||_2^2} = ||\theta_0||_2^2 + N\sigma^2$ but the James-Stein estimator contains $||Y||_2^2$ at the denominator and not $\EE{||Y||_2^2}$.} than the least squares. This is achieved by ``shrinking the estimate towards the origin''~\cite[page~3]{pillonetto}:
+\begin{equation*}
+  \thetaJS = (1-r)\thetaLS,\hspace{2em} r\doteq \frac{(N-2)\sigma^2}{||Y||^2}.
+\end{equation*}
+where $N=p$. It can be cast into the ridge regression problem
 \begin{equation*}
   ||Y-\theta||^2 + \gamma ||\theta||^2,\hspace{2em} \gamma = \frac{(N-2)\sigma^2}{||Y||^2 - (N-2)\sigma^2}.
 \end{equation*}
@@ -124,7 +130,7 @@ The inverse of the DC kernel is a tridiagonal with the explicit form
 \label{sec:estimation-bias}
 
 \begin{quotation}
-  One cannot say that the linear least-squares method is unbiased in general. There are three elements at play: the data set, the model used, and the estimation method. Least-squares is just the estimation method. To check if it is unbiased, an assumption has to be made on the true system that generated the data, and the model used to get the closed form expression of the LS estimator. [Mohamed Abdalmoaty on Moodle]
+  One cannot say that the linear least-squares method is unbiased in general. There are three elements at play: the data set, the model used, and the estimation method. Least-squares is just the estimation method. To check if it is unbiased, an assumption has to be made on the true system that generated the data, and the model used to get the closed form expression of the least-squares estimator. [Mohamed Abdalmoaty on Moodle]
 \end{quotation}
 
 In the following, the input $u$ is known, the measurement noise $e$ has zero-mean, the data is generated as $Y=\Phi\theta_0+e$ with $\theta_0\in R^p$; we estimate $\theta\in R^q$ in the linear regression model $Y=\Phi_q\theta+e$; and we use the least-squares estimation method: then $\hat{\theta} = \left(\Phi_q^\top \Phi_q\right)^{-1} \Phi_q^\top Y$.
