@@ -328,28 +328,37 @@ Some of the common cases that we have seen so far are summarized in Table~\ref{t
 \subsection{Known Noise Model (with AR Noise Dynamics)}
 \label{sec:known-noise-model}
 
-This was addressed in the exercises but I did not understand it fully. If the noise model $L(z)$ is known
+This was partially addressed in the exercises. If the noise model $L(z)$ is known
 \begin{equation*}
   y(k) = \frac{B(z)}{A(z)}u(k) + \frac{L(z)}{A(z)}e(k)
 \end{equation*}
-provided $L(z)$ is stably invertible, by letting $y_L(k)\doteq L^{-1}(z)y(k)$ and $u_L(k)\doteq L^{-1}(z)u(k)$, one obtains the standard ARX form
+and provided $L(z)$ is stably invertible, by letting $y_L\doteq L^{-1}y$ and $u_L\doteq L^{-1}u$, one obtains the standard ARX form
 \begin{align*}
   y_L(k) &= \frac{B(z)}{A(z)}u_L(k) + \frac{1}{A(z)}e(k) \\
-  \hat{y}_L(k|k-1) &= \underbrace{\left(1-A(z)\right)y_L(k) + B(z)u_L(k)}_{\Phi_L\theta_0}
+  %y_L &= \frac{B}{A}u_L + \frac{1}{A}e \\
+% \hat{y}_L(k|k-1) &= \underbrace{\left(1-A(z)\right)y_L(k) + B(z)u_L(k)}_{\Phi_L\theta_0}
+\hat{y}_L(k|k-1) &= \underbrace{\left(1-A\right)y_L + Bu_L}_{\Phi_L\theta_0}
 \end{align*}
-for which, as usual, $y_L(k) - \hat{y}_L(k|k-1) = e(k)$. The estimate is obtained by least-squares minimization of the prediction error $y_L(k) - \hat{y}_L(k,\theta)$. In terms of $y(k)$, the prediction error
+for which, as usual, $y_L(k) - \hat{y}_L(k|k-1) = e(k)$. The estimate for $A(k,\theta)$, $B(k,\theta)$ is obtained by least-squares minimization of the prediction error $y_L(k) - \hat{y}_L(k,\theta)$. In terms of $y(k)$, the prediction error
 \begin{equation*}
   y(k) - L(z)\hat{y}_L(k|k-1) = L(z)e(k)
 \end{equation*}
-is the filtered error $L(z)e(k)$ but since filtered Gaussian noise is still Gaussian, the estimate remains unbiased.
+is the filtered error $L(z)e(k)$ but since filtered Gaussian noise is still Gaussian, the estimate remains unbiased. Note that
+\begin{equation*}
+  L(z)\hat{y}_L(k|k-1) \neq \hat{y}(k|k-1)
+\end{equation*}
+is \emph{not} the one-step ahead prediction for $y(k)$, because we expect the difference to be $e(k)$.
 
 If one were to use eq.~\eqref{eq:one-step-ahead-predictor} to compute the one-step ahead predictor for which the prediction error is $e(k)$, one would obtain the linear expression $\Phi_L\theta_0$ plus an offset term
 \begin{align*}
   \hat{y}(k|k-1) &= \frac{B(z)}{L(z)}u(k) + \frac{L(z)-A(z)}{L(z)}y(k) \\
-                 &= B(z)u_L(k) + \left(L(z)-A(z)\right)y_L(k) \\
-                 &= \underbrace{\left(1-A(z)\right)y_L(k) + B(z)u_L(k)}_{\Phi_L\theta_0} + \left(L(z)-1\right)y_L(k)
+                 %&= B(z)u_L(k) + \left(L(z)-A(z)\right)y_L(k) \\
+                 %&= \underbrace{\left(1-A(z)\right)y_L(k) + B(z)u_L(k)}_{\Phi_L\theta_0} + \left(L(z)-1\right)y_L(k)
+                 &= Bu_L + \left(L-A\right)y_L \\
+                 &= \underbrace{\left(1-A\right)y_L + Bu_L}_{\Phi_L\theta_0} + \left(L-1\right)y_L
 \end{align*}
-which must be subtracted from $y(k)$. The additional cost is the computation of the offset term $\texttt{lsim(L-1, Y\_L)}$.
+which must be subtracted from $y(k)$.
+
 
 %%% Local Variables:
 %%% mode: latex
