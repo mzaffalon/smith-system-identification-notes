@@ -1,0 +1,125 @@
+% Created 2023-12-21 Do. 12:01
+% Intended LaTeX compiler: pdflatex
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+%\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{enumitem}
+%\date{\today}
+%\title{}
+\hypersetup{
+ pdfauthor={},
+ pdftitle={},
+ pdfkeywords={},
+ pdfsubject={},
+ pdfcreator={Emacs 29.1 (Org mode 9.6.6)}, 
+ pdflang={English}}
+\begin{document}
+
+
+\section*{Problem 1}
+\label{sec:prob1}
+
+\begin{enumerate}
+\item [\textbf{Part 1}]
+  We work with the model
+  \begin{equation*}
+    y(k) = \frac{B(z)}{A(z)}u(k) + \frac{H_1(z)}{A(z)}e(k).
+  \end{equation*}
+  \begin{enumerate}%[label=\alph*]
+  \item $h_1= 0$: this is a standard ARX model with one-step ahead predictor
+    \begin{equation*}
+      \hat{y}(k|k-1) = (1-A)y+Bu.
+    \end{equation*}
+  \item Here it is convenient to work with the scaled problem $y_C(k) = C^{-1}y(k)$ where the one-step ahead predictor is
+    \begin{equation*}
+      \hat{y}_C(k|k-1) = (1-A)y_C+Bu_C.
+    \end{equation*}
+    $C(z) = 1+z^{-1}$ is not stably invertible, so I am not sure this is really justified.
+
+  \end{enumerate}
+
+\item [\textbf{Part 2}] The model is
+\begin{equation}
+  \label{eq:prob1-eq3}
+  y(k) = \underbrace{\frac{F(z)}{D(z)}}_{\doteq G_2(z)}u(k) + \frac{H_1(z)}{D(z)}e(k) + \frac{H_2(z)}{D(z)}w(k).
+\end{equation}
+The estimate $\hat{\theta}$ can be found using the one-step ahead predictor for the modified variables $y_H\doteq H_1^{-1}y$ and can be computed in the usual way: multiply by $D$ and rearrange it as
+\begin{equation}
+  \label{eq:prob1-eq3-linear}
+  y = (1-D)y + Fu + H_1e + H_2w
+\end{equation}
+multiply by $H_1^{-1}$ (provided $H_1$ is stably invertible, which $H_1=1+z^{-1}$ is not)
+\begin{equation*}
+  y_H = (1-D)y_H + Fu_H + e + H_2w_H.
+\end{equation*}
+The one-step ahead predictor for $y_H$ is
+\begin{align*}
+  \hat{y}_H(k|k-1) &= (1-D)y_H + Fu_H + H_2w_H \\
+                   &= \underbrace{\left[(1-D)y_H + Fu_H + z^{-1}w_H\right]}_{\Phi_H\theta_0} + w_H(k).
+\end{align*}
+Since $H_2$ has a pass-through term, the regressor becomes affine.
+
+Multiplying $\hat{y}_H(k|k-1)$ by $H_1(z)$
+\begin{equation*}
+  H_1(z)\hat{y}_H(k|k-1) = (1-D)y + Fu + H_2w
+\end{equation*}
+does \emph{not} give the one step-ahead predictor for $y(k)$, because from the definition, we expect $y(k)-\hat{y}(k|k-1)=e(k)$; here instead we have
+\begin{equation*}
+  y(k)-H_1(z)\hat{y}_H(k|k-1) = H_1(z)e(k)
+\end{equation*}
+using eq.~\eqref{eq:prob1-eq3-linear}. To compute the correct one-step ahead predictor for $y(k)$, we use the formula derived in class
+\begin{equation*}
+  \hat{y} = H^{-1}Gx + (1-H^{-1})y, \hspace{1em} Gx = \frac{F}{D}u+\frac{H_2}{D}w, \hspace{1em} H = \frac{H_1}{D}.
+\end{equation*}
+The formula holds also when $\frac{H_2}{D}$ has a pass-through term (at least I do not see a reason why it should not). Straightforward application gives
+\begin{align*}
+  \hat{y}(k|k-1) &= Fu_H + H_2w_H + (H_1-D)y_H \\
+                 &= (1-D)y_H + Fu_H + H_2w_H + (H_1-1)y_H
+\end{align*}
+where the second form can be used for the parametrization and the first to compute the prediction once the parameters $\hat{\theta}$ are known.
+\end{enumerate}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{Problem 2}
+\label{sec:prob2}
+
+Given the two pulse responses $\{U_1,Y_1\}$ and $\{U_2,Y_2\}$ from the same system $G(z)$, how do we estimate $\hat{G}(z)$?
+
+One way is to estimate the two separately and combine the estimates:
+\begin{equation*}
+  \hat{G}_1 = (\Phi_1^\top \Phi_1)^{-1}\Phi_1^\top Y_1,\hspace{2em} \hat{G}_2 = (\Phi_2^\top \Phi_2)^{-1}\Phi_2^\top Y_2, \hspace{2em}\hat{G} = \frac{\hat{G}_1 + \hat{G}_2}{2}
+\end{equation*}
+Another way is by stacking the measurements:
+\begin{equation*}
+  \begin{bmatrix}
+    Y_1 \\ Y_2
+  \end{bmatrix} =
+  \begin{bmatrix}
+    \Phi_1 \\ \Phi_2
+  \end{bmatrix}\hat{g},\hspace{2em} \hat{g} = \frac{1}{\Phi_1^\top \Phi_1 + \Phi_2^\top \Phi_2}(\Phi_1^\top Y_1 + \Phi_2^\top Y_2)
+\end{equation*}
+Clearly the two results are not the same, even when the regressors are noise-free (\textit{e.g.} when one applies two different sets of control inputs) but they are both unbiased. Numerically, the standard deviation is also equal, see implementation \texttt{test3.m}.
+
+The decisive argument in favour of the second approach is that the measurement with the stronger signal should count more. This is encoded in $\Phi$: a stronger control input results in larger $\Phi$ and $Y$, since $Y = \Phi G_0 + e$.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{Problem 3}
+\label{sec:prob3}
+
+The systems model is
+\begin{equation*}
+  y(k) = \frac{B(z)}{A(z)}u(k) + \frac{1}{A(z)}e(k)
+\end{equation*}
+After computing $u(k)=r(k)-C(z)y(k)$, the problem is a standard ARX model.
+
+\end{document}
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

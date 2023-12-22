@@ -94,7 +94,7 @@ end
 end
 
 
-%% used only for tesing the inverse
+%% used only for testing the inverse
 function P = TCKernel(alpha, n)
 P = zeros(n,n);
 alpha_n = 1;
