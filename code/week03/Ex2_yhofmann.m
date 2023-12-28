@@ -12,7 +12,7 @@ data1 = importdata("experiment1.dat").data;
 t1 = data1(:,1),
 y1 =  data1(:,2)
 std1= data1(:,3)
-reg = [ones(size(y1,1),1), t1, t1.^2 ];
+reg = [ones(length(y1),1), t1, t1.^2 ];
 theta = reg\y1
 
 
@@ -55,7 +55,7 @@ data2 = importdata("experiment2.dat").data;
 t2 = data2(:,1),
 y2 =  data2(:,2)
 std2= data2(:,3)
-reg2 = [ones(size(y2,1),1), t2, t2.^2 ];
+reg2 = [ones(length(y2),1), t2, t2.^2 ];
 %w = cov with formula from ex1
 R2 = diag(std2.^2);
 cov =inv(reg2'*inv(R2)*reg2);
