@@ -15,7 +15,7 @@
  pdftitle={},
  pdfkeywords={},
  pdfsubject={},
- pdfcreator={Emacs 29.1 (Org mode 9.6.6)}, 
+ pdfcreator={Emacs 29.1 (Org mode 9.6.6)},
  pdflang={English}}
 \begin{document}
 
@@ -103,7 +103,7 @@ Another way is by stacking the measurements:
     \Phi_1 \\ \Phi_2
   \end{bmatrix}\hat{g},\hspace{2em} \hat{g} = \frac{1}{\Phi_1^\top \Phi_1 + \Phi_2^\top \Phi_2}(\Phi_1^\top Y_1 + \Phi_2^\top Y_2)
 \end{equation*}
-Clearly the two results are not the same, even when the regressors are noise-free (\textit{e.g.} when one applies two different sets of control inputs) but they are both unbiased. Numerically, the standard deviation is also equal, see implementation \texttt{test3.m}.
+Clearly the two results are not the same, even when the regressors are noise-free (\textit{e.g.} when one applies two different sets of control inputs) but they are both unbiased. Numerically, the standard deviation is also equal, see implementation \texttt{test3.m} but here I took the input signals to have the same amplitudes.
 
 The decisive argument in favour of the second approach is that the measurement with the stronger signal should count more. This is encoded in $\Phi$: a stronger control input results in larger $\Phi$ and $Y$, since $Y = \Phi G_0 + e$.
 
@@ -119,6 +119,7 @@ The systems model is
 After computing $u(k)=r(k)-C(z)y(k)$, the problem is a standard ARX model.
 
 \end{document}
+
 %%% Local Variables:
 %%% mode: latex
 %%% TeX-master: t

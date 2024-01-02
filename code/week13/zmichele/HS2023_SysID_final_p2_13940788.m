@@ -31,8 +31,8 @@ function [p21_thetaHat1, p21_thetaHat2, p21_thetaHat3, p21_bias1, ...
 name=mfilename;
 LegiNumber= name(end-7:end);
 
-DEBUG = false;
-%LegiNumber = 13940788;
+DEBUG = true;
+LegiNumber = 13940788;
 
 [Y1, Y2, Y3, dataSet1, dataSet2, dataSet3, var_ratio] = HS2023_SysID_final_p2_GenerateData(LegiNumber);
 sigma_ratio = sqrt(var_ratio);
@@ -63,6 +63,7 @@ end
 %%
 
 taumax = 100;
+%transient = 100;
 M = cell(taumax,1);
 E = zeros(taumax,1);
 for order = 1:taumax
@@ -70,9 +71,9 @@ for order = 1:taumax
     [Phi2, y2]       = makePhiy(dataSet2, order, order);
     [Phi_val, Y_val] = makePhiy(dataSet3, order, order);
 
-    %[Phi1, y1]       = makePhiy(dataSet1, taumax, order);
-    %[Phi2, y2]       = makePhiy(dataSet2, taumax, order);
-    %[Phi_val, Y_val] = makePhiy(dataSet3, taumax, order);
+    %[Phi1, y1]       = makePhiy(dataSet1, transient, order);
+    %[Phi2, y2]       = makePhiy(dataSet2, transient, order);
+    %[Phi_val, Y_val] = makePhiy(dataSet3, transient, order);
 
     theta = [Phi1; Phi2/sigma_ratio] \ [y1; y2/sigma_ratio];
     M{order} = theta;
@@ -143,18 +144,18 @@ MSE = 10*var_e;
 end
 
 
-function [Phi, y] = makePhiy(data, taumax, order)
+function [Phi, y] = makePhiy(data, discard, order)
 u = data(:,1);
 % For y discard the first taumax elements. NaNs in the first taumax
 % elements count towards the transient, so that we remove only the NaNs
 % after the transient.
-y = data(taumax+1:end,2);
+y = data(discard+1:end,2);
 % find and remove the NaNs
 m = find(~isnan(y));
 y = y(m);
 % construct the toeplitz matrix; the initial conditions are not known, so
 % start from the taumax+1 entry to compute g(i), i=0..order
-Phi = toeplitz(u(taumax+1:end), flip(u(taumax-order+1:taumax+1)));
+Phi = toeplitz(u(discard+1:end), flip(u(discard-order+1:discard+1)));
 Phi = Phi(m,2:end);
 end
 

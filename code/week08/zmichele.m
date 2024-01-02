@@ -25,7 +25,7 @@ end
 gest_avg = gest_avg ./ (1:M);
 e_avg = transpose(vecnorm(gest_avg - g0, 2));
 
-figure(); 
+figure();
 loglog(1:M, e_avg); hold("on"); loglog(1:M, e_avg(1) ./ sqrt(1:M)); loglog(1:M, e_avg(1) ./ (1:M))
 grid("on"); xlabel("number of averages"); ylabel("error"); legend("error", "1/sqrtM", "1/M"); legend("boxoff")
 title("Averaging method (error)")
@@ -47,7 +47,7 @@ e_Nr = transpose(vecnorm(gest_Nr - g0, 2));
 figure();
 loglog(2:m, e_N); hold("on"); loglog(2:m, e_Nr);
 loglog(2:m, sqrt(2)*e_N(1) ./ sqrt(2:m))
-grid("on"); xlabel("number of periods"); ylabel("error"); 
+grid("on"); xlabel("number of periods"); ylabel("error");
 legend("periodic input", "rand input", "1/sqrtM"); legend("boxoff")
 title("m periods (error)")
 

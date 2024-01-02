@@ -39,7 +39,9 @@
 
 \newcommand{\taumax}{\tau_\text{max}}
 \newcommand{\ejw}{e^{j\omega}}
-\newcommand{\ejwn}{e^{j\omega_n}}
+\newcommand{\ejwn}[1][]{e^{j\omega_n#1}}
+\newcommand{\emjwn}[1][]{e^{-j\omega_n#1}}
+
 
 \addbibresource{notes.bib}
 
@@ -51,11 +53,10 @@
 % \include{stats}
 \include{LS}
 \include{regularization}
-%\include{freq-domain}
+\include{freq-domain}
 %\include{time-domain}
 \include{PEM}
 \include{closedloop}
-%\include{exercises.tex}
 
 \printbibliography
 
