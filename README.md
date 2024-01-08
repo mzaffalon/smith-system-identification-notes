@@ -12,3 +12,5 @@ Suggestions and PRs are welcome.
 - 2023-12-16: added clarification on bias for ARX models
 - 2023-12-18: added question about derivation of the James-Stein estimator
 - 2023-12-22: added personal solutions to the final exam
+- 2024-01-02: added frequency domain analysis
+- 2024-01-08: added time domain analysis

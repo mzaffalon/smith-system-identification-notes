@@ -1,0 +1,205 @@
+\chapter{Pulse Response Estimation}
+\label{chap:time-domain}
+
+
+The frequency-domain approach cannot easily deal with the transient: ignoring it leads to a biased estimate of the transfer function $\hat{G}(\ejwn)$. In the time domain approach it is easy to include the transient.
+
+Starting\footnote{We have seen in the previous chapter that $G(e^{j\omega})$ is related to $g(\tau)$ by a Fourier transformation when the full time reponse $k\in (-\infty,+\infty)$ is available; otherwise it is only approximately true.} from eq.~\eqref{eq:linear-model-pulse}
+\begin{equation*}
+  y(k) \doteq \sum_{l=0}^\infty g(l)u(k-l) + v(k)
+\end{equation*}
+(note that here the summation\footnote{Why do we need the pass-through term?} starts from $l=0$) and expanding the relationship above gives
+\begin{align*}
+  y(k) &= g(0)u(k) + g(-1)u(k-1) + g(-2)u(k-2) + \ldots + v(k) \\
+  y(k+1) &= g(0)u(k+1) + g(-1)u(k) + g(-2)u(k-1) + \ldots + v(k+1) \\
+  y(k+2) &= \ldots
+\end{align*}
+which can be written in Toeplitz matrix form as
+\begin{equation}
+  \label{eq:TD-response-estimation-matrix}
+  \begin{bmatrix}
+    y(0) \\ y(1) \\ \vdots \\ y(K-1)
+  \end{bmatrix} =
+  \begin{bmatrix}
+    u(0) & u(-1) & \ldots & u(-K+1) && \ldots \\
+    u(1) & u(0) & \ldots & u(-K+2) && \ldots \\
+    \vdots & & \ddots & \vdots \\
+    u(K-1) & u(K-2) & & \ldots & & \hdots
+  \end{bmatrix}
+  \begin{bmatrix}
+    g(0) \\ g(1) \\ g(2) \\ \vdots
+  \end{bmatrix} +
+  \begin{bmatrix}
+    v(0) \\ v(1) \\ \vdots \\ v(K-1)
+  \end{bmatrix}
+\end{equation}
+or, in matrix notation, as
+\begin{equation}
+  \label{eq:TD-response-estimation}
+  Y = \Phi_ug + V.
+\end{equation}
+The existence of the estimate $\hat{g}$ and its properties depends on how $\Phi_u$ is constructed. We will consider them here.
+
+In the following we will drop the error term $V$ to keep the notation more readable. Moreover, zero-mean Gaussian distributed error does not induce bias using least-squares estimation.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Estimation of Truncation Error for IIR}
+\label{sec:truncation-error-estimation}
+
+A finite impulse response (FIR) is described by a finite ($\taumax+1$) number of coefficients: that is $g(\tau) = 0$ for $\tau \ge \taumax$. $\hat{g}(\tau)$ in eq.~\eqref{eq:TD-response-estimation} can be found by least-squares.
+
+On the contrary, for rational transfer functions (infinite impulse response, IIR) an infinite number of terms is required to describe the impulse response $g$. If the system is stable, the amplitudes of $g$ decays exponentially.
+
+We cannot solve the least-squares problem with an infinite number of terms but the system can be truncated to a finite number of terms, since $g$ decays exponentially. This is guaranteed by the following theorem: For a strictly stable real-rational system, if all of the poles of $g$ are inside the unit-circle, then, for any $\epsilon>0$, there exists a $\taumax$ such that
+\begin{equation*}
+  \sum_{i=\taumax+1}^\infty |g(i)| < \epsilon
+\end{equation*}
+where the truncation of eq.~\eqref{eq:TD-response-estimation} gives rise to the error term
+\begin{align*}
+  \begin{bmatrix}
+    y(0) \\ \vdots \\ y(K-1)
+  \end{bmatrix} =
+  \begin{bmatrix}
+    u(0) & \ldots & u(-\taumax) \\
+    \vdots & \ddots & \vdots \\
+    u(K-1) & \ldots & u(K-\taumax-1)
+  \end{bmatrix}
+  \begin{bmatrix}
+    g(0) \\ \vdots \\ g(\taumax)
+  \end{bmatrix} +
+  \begin{bmatrix}
+    e(0) \\ \vdots \\ e(K-1)
+  \end{bmatrix}
+\end{align*}
+where $Y,\ E\in \mathcal{R}^K$, $\Phi_u \in \mathcal{R}^{K\times(\taumax+1)}$ and $g \in \mathcal{R}^{\taumax+1}$. Ignoring the error makes the estimate biased: the estimate is however asymptotically unbiased as it can be made arbitrarily small by selecting a larger $\taumax$.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Initial Conditions: Negative Times for $g$}
+
+The expression eq.~\eqref{eq:TD-response-estimation-matrix} requires the knowledge of the control input at negative times. If the initial conditions are not known, the corresponding terms must be discarded
+\begin{equation*}
+  \begin{bmatrix}
+    y(\taumax) \\ \vdots \\ y(K-1)
+  \end{bmatrix} =
+  \begin{bmatrix}
+    u(\taumax) & \ldots & u(0) \\
+    \vdots & \ddots & \vdots \\
+    u(K-1) & \ldots & u(K-\taumax-1)
+  \end{bmatrix}
+  \begin{bmatrix}
+    g(0) \\ \vdots \\ g(\taumax)
+  \end{bmatrix} +
+  \begin{bmatrix}
+    e(\taumax) \\ \vdots \\ e(K-1)
+  \end{bmatrix}
+\end{equation*}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Bad Measurements}
+
+A bad measurement can be also easily dealt with in the time domain. Let us assume that $y(j)$ was corrupted. The problem can still be written as before with the faulty line removed:
+\begin{equation*}
+  \begin{bmatrix}
+    % y(\taumax) \\ \vdots \\ y(j-1) \\ y(j) \\ y(j+1) \\ \vdots \\ y(K-1)
+y(\taumax) \\ \vdots \\ y(j-1) \\ y(j+1) \\ \vdots \\ y(K-1)
+  \end{bmatrix} =
+  \begin{bmatrix}
+    u(\taumax) & \ldots & & u(0) \\
+    \vdots & & & \vdots \\
+    u(j-1) & u(j-2) & \ldots & u(j-\taumax-2) \\
+    %u(j) & u(j-1) & \ldots & u(j-\taumax-1) \\
+    u(j+1) & u(j) & \ldots & u(j-\taumax) \\
+    \vdots & & & \vdots \\
+    u(K-1) & \ldots & & u(K-\taumax-1)
+  \end{bmatrix}
+  \begin{bmatrix}
+    g(0) \\ g(1) \\ \vdots \\ g(\taumax)
+  \end{bmatrix} +
+  \begin{bmatrix}
+    % e(\taumax) \\ \vdots \\ e(j-1) \\ e(j) \\ e(j+1) \\ \vdots \\ e(K-1)
+e(\taumax) \\ \vdots \\ e(j-1) \\ e(j+1) \\ \vdots \\ e(K-1)
+  \end{bmatrix}
+\end{equation*}
+and the truncation is still valid.
+
+The problem is different if $u(j)$ were unknown: in this case all elements\footnote{This is a block of dimentions $\taumax\times \taumax$.} where $u(j)$ had an effect, must be eliminiated.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Uniqueness of $\hat{g}$ and Persistency of Excitation}
+\label{sec:persistency-excitation}
+
+For the solution to be unique, $\Phi_u$ needs to have full column rank. What input signals satisfy this requirement? For instance, a single sinusoidal input signal would make the matrix have rank 2 and in the frequency domain, this would determine amplitude and phase of a single frequency\footnote{In the time domain, trying to solve the rank-deficient problem results in the wrong estimate of the coefficients, see \texttt{07\_lect/persistency.jl}.}.
+
+\begin{itemize}
+\item The constant function\footnote{Prof. Smith calls is step function, but a step function makes $\Phi_u$ full matrix.} $u(k)=1$, $\forall k$ is persistently exciting of order 1;
+\item a PRBS signal\footnote{This is a periodic deterministic signal with white noise-like properties. It is generated by the differential equation
+    \begin{equation*}
+      u(k) = \mod(A(q)u(k),2), \hspace{2em} A(q)u(k) = \sum_{i=1}^na_iu(t-i).
+    \end{equation*}
+    The actual period depends on the choice of $A(q)$ and for each $n$ there exists choices of $A(q)$ that give the maximum length.~\cite[Chap.~13]{ljung}. The MATLAB command is either \texttt{prbs(M,N)} or \texttt{idinput("prbs", N)}.} of period $M$ is persistently exciting of order $M$;
+\item the sum of sinusoidals
+  \begin{equation*}
+    u(k) = \sum_{s=1}^S \alpha_s \cos(\omega_sk + \phi_s)
+  \end{equation*}
+  is persistently exciting of order $2S$ if $\omega_s\in (0,\pi)$. The order decreases by 1 if either one of $\omega_s = 0,\pi$ is included and by 2 if both frequencies are included. For periodic signals, $\Phi_u$ is circulant.
+\end{itemize}
+
+In class (and in \cite[Sect.~13.2]{ljung}) the uniqueness of $\hat{g}$ was discussed in terms of the rank of the auto-correlation matrix $R_u$, but discussion in Moodle indicates that checking for the singular values of $\Phi_u$ is completely equivalent.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Pulse Response from Cross- and Autocorrelation}
+\label{sec:}
+
+A similar relationship holds for the correlations\footnote{So was derived the expression in class: From eq.~\eqref{eq:linear-model-pulse}, we have
+  \begin{align*}
+    \EE{y(k)u(k-\tau)} &= \EE{\sum_{i=0}^\infty g(i)u(k-i)u(k-\tau)} + \EE{v(k)u(k-\tau)} \\
+                       &= \sum_{i=0}^\infty g(i) \EE{u(k-i)u(k-\tau)} \\
+                       &= \sum_{i=0}^\infty g(i) R_u(\tau-i)
+  \end{align*}
+}
+\begin{equation*}
+  R_{yu}(\tau) = g(\tau) \star R_u(\tau)
+\end{equation*}
+This is seen by multiplying eq.~\eqref{eq:TD-response-estimation} from the left by $\Phi_u^\top$; $R_{yu}(\tau) = \Phi_u^\top y$ and $R_u =\Phi_u^\top \Phi_u^\top$, and taking the expectations, because $\Phi_u$ is the matrix containing the shifted entries $u$.
+
+The equivalent expression in the frequency domain was derived in Sect.~\ref{sec:spectral-estimation-methods}.
+
+\iffalse
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Equivalence Between Time and Frequency Domain}
+\label{sec:equivalence-time-freq-domain}
+
+Given eq.~\eqref{eq:TD-response-estimation}, the equivalence with the ETFE is established by multiplying by the Fourier transform matrix $F_y$ and $F_g$ (which may have different dimensions but are nevertheless square)
+\begin{equation*}
+  F_yy = F_y\Phi_uF_g^{-1}\underbrace{F_gg}_{\doteq G} + F_yv \longrightarrow \hat{G} = \left(F_y\Phi_uF_g^{-1}\right) \backslash \left(F_yy\right)
+\end{equation*}
+This to be equal to the standard result
+\begin{equation*}
+\hat{G} = F_g\cdot (\Phi_u \backslash y).
+\end{equation*}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Slowly-Decaying Systems}
+\label{sec:slowly-decaying-systems}
+
+If $N<\taumax$, even in the periodic input case, the time response is aliased.
+
+
+
+In the frequency domain instead, even an aliased estimate gives the correct transfer function $\hat{G}(e^{j\omega_n}) = G(e^{j\omega})|_{\omega=\omega_n}$.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Non-Periodic Frequency Domain Estimation}
+
+The estimate is unbiased only when $N>\taumax$, that is when the transient has died out
+\begin{equation*}
+  \hat{G}(e^{j\omega_n}) = G_0(e^{j\omega_n}) + X_u^{-1}\left[V((e^{j\omega_n})) + R((e^{j\omega_n}))\right]
+\end{equation*}
+\fi
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "notes"
+%%% End:
