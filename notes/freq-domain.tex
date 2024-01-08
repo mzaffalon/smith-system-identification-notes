@@ -5,31 +5,31 @@
 \section{Linear Time-Invariant Systems}
 \label{sec:LTI}
 
-The noiseless linear time-invariant system
-\begin{equation*}
-  %\label{eq:impulse-response}
-  y(t) \doteq \sum_{k=1}^\infty g(k)u(t-k)
-\end{equation*}
-is assumed to have a causal impulse reponse $g(k)=0$, $\forall k\le 0$.
+We consider linear time-invariant systems
+\begin{equation}
+  \label{eq:linear-model-pulse}
+  y(k) \doteq \sum_{l=1}^\infty g(l)u(k-l) + v(k)
+\end{equation}
+with a causal pulse reponse $g(l)=0$, $\forall l\le 0$.
 
 Using the \emph{forward and inverse shift operator}~\cite[p.~24]{ljung}
 \begin{equation*}
-  qu(t) \doteq u(t+1), \hspace{2em} q^{-1}u(t) \doteq u(t-1)
+  qu(k) \doteq u(k+1), \hspace{2em} q^{-1}u(k) \doteq u(k-1)
 \end{equation*}
-one writes the expression above as
+one rewrites the expression above as
 \begin{equation*}
-  y(t) = \sum_{k=1}^\infty g(k)u(t-k) = \sum_{k=1}^\infty g(k)q^{-k}u(t) = \underbrace{\left[\sum_{k=1}^\infty g(k)q^{-k}\right]}_{\doteq G(q)}u(t).
+  \sum_{l=1}^\infty g(l)u(k-l) = \sum_{l=1}^\infty g(l)q^{-l}u(k) = \underbrace{\left[\sum_{l=1}^\infty g(l)q^{-l}\right]}_{\doteq G(q)}u(k).
 \end{equation*}
 
-In the presence of a filtered additive disturbance $v(t)=H(q)e(t)$
+$v(t)$ is a filtered additive disturbance, $v(t)=H(q)e(t)$
 \begin{equation*}
-  H(q) \doteq 1 + \sum_{k=1}^\infty h(k)q^{-k}
+  H(q) \doteq 1 + \sum_{l=1}^\infty h(l)q^{-l}
 \end{equation*}
 and $e(k)$ is scaled so that $h(0)=1$.
 
 In the rest, we shall be considering the (SISO) linear model
 \begin{equation}
-  \label{eq:linear-model-noise}
+  \label{eq:linear-model-z}
   y(k) = G(z)u(k) + H(z)e(k)
 \end{equation}
 where $y,u \in \mathcal{R}$, $e \in \mathcal{N}(0,\sigma^2)$ is the Gaussian uncorrelated independent and identically distributed (i.i.d.) noise with zero mean and variance $\sigma^2$ and $v(k) = H(z)e(k)$ the filtered noise.
@@ -41,7 +41,27 @@ We wish to estimate $\hat{G}$ from the finite set of measurements
 of length $K$. The different methods
 \begin{itemize}
 \item transfer function in the frequency domain (this Chapter);
-\item transfer function in the time domain (pulse response and real-rational transfer functions Chap.~\ref{chap:});
+\item real-rational transfer function in the time domain\footnote{
+    This holds for the frequency and the time approach. Eq.~\eqref{eq:linear-model-z} is parametrized as
+    \begin{equation*}
+      y(k) = G(\theta)u(k) + H(\theta)e(k),\hspace{1em}y \in \mathcal{R},\ u\in \mathcal{R}
+    \end{equation*}
+    where $\theta \in \mathcal{R}^d$ and $d$ is the model parameter. For real-rational transfer functions in the $z$-domain
+    \begin{equation}
+      %\label{eq:transfer-function-parametrization}
+      G(z) = \frac{b_1z^{-1} + b_2z^{-2} + \ldots + b_mz^{-m}}{1 + a_1z^{-1} + \ldots + a_mz^{-n}}
+    \end{equation}
+    a common parametrization is
+    \begin{equation*}
+      \theta =
+      \begin{bmatrix}
+        a_1 & \ldots & a_n & b_1 & \ldots & b_m
+      \end{bmatrix}^\top
+    \end{equation*}
+    where $p = m+n$. The transfer function in the frequency domain $G(\ejw)$ is $G(z)$ evaluated at fixed points $z=\ejw$
+    \begin{equation*}
+      G(\ejw) = G(z)\Big|_{z=\ejw}.
+    \end{equation*}}, Chap.~\ref{chap:time-domain};
 \item state-space approach
   \begin{equation*}
     \begin{aligned}
@@ -61,7 +81,7 @@ In the frequency domain,
 \begin{equation*}
   U(\ejw) \doteq \sum_{k=-\infty}^{\infty} y(k)e^{j\omega k} \hspace{2em} Y(\ejw) \doteq \sum_{k=-\infty}^{\infty} y(k)e^{j\omega k}
 \end{equation*}
-eq.~\eqref{eq:linear-model-noise} becomes
+eq.~\eqref{eq:linear-model-z} becomes
 \begin{equation}
   \label{eq:model-frequency-domain}
   Y(\ejw) = G(\ejw)U(\ejw) + V(\ejw) + R(\ejw)
@@ -165,20 +185,22 @@ The transient instead decays exponentially: its PSD remains constant as a functi
 \section{Swept-Sine Identification}
 \label{sec:swept-sine-identification}
 
-The system\footnote{To my knowledge, this method is also called demodulation or lock-in detection.} is excited with the periodic input signal $u(k)=\alpha \cos(\omega_uk)$ of \emph{arbitrary} frequency $\omega_u$. The output to this excitation is
+The system\footnote{To my knowledge, this method is also called demodulation or lock-in detection.} is excited with the periodic input signal $u(k)=\alpha \cos(\omega_uk)$ of \emph{arbitrary} frequency $\omega_u$. The output\footnote{Plugging the excitation into eq.~\eqref{eq:linear-model-pulse}, one obtains
+  \begin{align*}
+    y(k) &= \frac{\alpha}{2}\left[\sum_{l=1}^\infty g(l) e^{+j\omega_u(k-l)} + \sum_{l=1}^\infty g(l) e^{-j\omega_u(k-l)}\right] + v(k) \\
+         &= \frac{\alpha}{2}\left[\left(\sum_{l=1}^\infty g(l) e^{-j\omega_ul}\right) e^{+j\omega_uk} + \left(\sum_{l=1}^\infty g(l) e^{+j\omega_ul}\right) e^{-j\omega_uk}\right] + v(k)
+  \end{align*}
+  where the terms in round brackets are $G(e^{+j\omega_u})$ and $G(e^{-j\omega_u})$ respectively.} to this excitation is
 \begin{equation*}
   y(k) = \underbrace{\frac{\alpha}{2} \left[G(e^{j\omega_u})e^{+j\omega_uk} + G(e^{-j\omega_u})e^{-j\omega_uk}\right]}_\text{steady state response} + v(k) + \text{transient}.
 \end{equation*}
 The correlation signal
-\begin{equation*}
-  I(N) \doteq \frac{1}{N}\sum_{k=0}^{N-1}y(k)e^{-j\omega_u k}
-\end{equation*}
-converges to $\frac{\alpha}{2}G(e^{j\omega_u})$ as $N\rightarrow \infty$
 \begin{align*}
-  I(N) &= \frac{\alpha}{2} G(e^{j\omega_u}) + \frac{\alpha}{2N} \sum_{k=0}^{N-1} G(e^{j\omega_u})e^{-2j\omega_u k} + \text{noise and transient} \\
-       &= \frac{\alpha}{2} G(e^{j\omega_u})
+  I(N) &\doteq \frac{1}{N}\sum_{k=0}^{N-1}y(k)e^{-j\omega_u k} \\
+       &= \frac{\alpha}{2} G(e^{j\omega_u}) + \frac{\alpha}{2N} \sum_{k=0}^{N-1} G(e^{j\omega_u})e^{-2j\omega_u k} \\
+       &\rightarrow \frac{\alpha}{2} G(e^{j\omega_u})\hspace{1em} \text{as } N\rightarrow \infty
 \end{align*}
-since the non-contant components average out.
+since the non-contant components (including noise and transient) average out.
 
 Advantages of this method:
 \begin{itemize}
@@ -196,31 +218,25 @@ Disadvantages are:
 \item some processes will not allow sinusoidal inputs.
 \end{itemize}
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Spectral Estimation Methods}
+\label{sec:spectral-estimation-methods}
+
+From eq.~\eqref{eq:freq-domain-LTI-estimator}, neglecting the transient and multiplying element-wise\footnote{The supplementary notes take a different approach, so I am not sure that my derivation holds.} by $U^\star(\ejwn)$, we have
+\begin{equation*}
+  \phi_{yu}(\ejwn) = G(\ejwn) \phi_u(\ejwn) + \phi_{uv}(\ejwn)
+\end{equation*}
+the cross correlation term $\phi_{uv}(\ejwn)$ being zero if $u$ and $v$ are uncorrelated (for instance in open loop). The estimate $\hat{G}(\ejwn)$ is
+\begin{equation*}
+  \hat{G}(\ejwn) = \frac{\hat{\phi}_{yu}(\ejwn)}{\hat{\phi}_u(\ejwn)}.
+\end{equation*}
+
+It is not clear to me why one would choose spectral methods instead of ETFE since the difference is only the multiplication by the deterministic input signal.
+
+The major point is how to determine the PSD in the case of non-periodic signals.
+
 \iffalse
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  \section{Spectral Estimation Methods}
-  \label{sec:spectral-estimation-methods}
-
-  From eq.~\eqref{eq:freq-domain-LTI-estimator}, neglecting the transient and multiplying element-wise by $U^\star(\ejwn)$, we have
-  \begin{equation*}
-    \phi_{yu}(\ejwn) = G \phi_u(\ejwn) + \phi_{uv}(\ejwn)
-  \end{equation*}
-  the cross correlation term $\phi_{uv}(\ejwn)$ being zero if $u$ and $v$ are uncorrelated (for instance in open loop). The estimate $\hat{G}(\ejwn)$ is
-  \begin{equation*}
-    \hat{G}(\ejwn) = \frac{\hat{\phi}_{yu}(\ejwn)}{\hat{\phi}_u(\ejwn)}.
-  \end{equation*}
-
-
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  \subsection{ETFE vs Spectral Methods}
-
-  It is not clear to me why would one choose spectral methods instead of ETFE.
-
-  In the case of periodic input signals, both estimators give identical results.
-
-  For the stochastic input signal, ``the unknown past inputs and future outputs are source of inaccuracy''. Both methods have a bias (?) but the variance for the ETFE is infinite\cite{broersen}. (What this means, I have no idea.)
-
-
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   \section{Smoothed Correlation and Cross-Correlation}
   \label{sec:smoothed-correlations}
@@ -229,11 +245,11 @@ Disadvantages are:
   \begin{equation*}
     \tilde{G}_N(e^{j\omega}) = \sum_{\xi=-\frac{N}{2}+1}^{\frac{N}{2}} W_\gamma(e^{j(\xi-\omega_n)}) \alpha(e^{j\xi}) \hat{G}_N(e^{j\xi})
   \end{equation*}
-  where $\alpha$ is the variance weighting of the result. The calculation is however better performed as multiplications by going back and forth with the Fourier transform.
+  where $\alpha$ is the variance weighting of the result. The calculation is however better performed as multiplications after Fourier transformation.
 
-  What is the value to use for the variance?
+  % What is the value to use for the variance?
 
-  Filtering is done with the Hann function or raised cosine. Its Fourier transform is real because the function is symmetric with $k$\footnote{One has
+  Filtering is usually done by the Hann function or by raised cosine. Its Fourier transform is real because the function is symmetric with respect to $k$\footnote{One has
     \begin{equation*}
       X(\ejwn) = \sum_{k=0}^{N-1} x(k)[\cos(\omega_nk) - j\sin(\omega_nk)].
     \end{equation*}
@@ -335,35 +351,35 @@ Cross-covariance and cross-correlations are similarly defined. For zero mean sig
 The definitions for the auto- and cross-correlation given above are for infinite length signals. Since one can only collect finite-length data, one must make a sensible approximation. The difficulty arises from the fact that in system identification ``the measured output is almost always composed of the sum of a stochastic signal (from the noise) and a deterministic, or even periodic, signal from the convolution of the plant with a deterministic input signal, $u(k)$. This means that there is no obvious correct choice in deciding which autocorrelation estimation method to apply. The better method will inevitably be problem dependent.''~\cite{smith-suppl4}.
 
 \iffalse
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Periodogram}
-\label{sec:periodogram}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \section{Periodogram}
+  \label{sec:periodogram}
 
-If $\{s(t)\}$ and $\{w(t)\}$ are related by the strictly stable system $G(q)$ and the input for $t<0$ unknown but obeying $|w(t)|\le C_w$ for all $t$, one has
-\begin{equation}
-  \label{eq:filtered-periodogram-estimate}
-  S_N(w) = G(e^{i\omega})W_N(w) + R_N(w)
-\end{equation}
-where
-\begin{equation}
-  \label{eq:estimate-transient}
-  |R_N(w)| \le 2C_w\frac{C_G}{\sqrt{N}},\hspace{2em} C_G = \sum_{k=1}^\infty k|g(k)|
-\end{equation}
-$R_N$ is \emph{not} the transient response.
+  If $\{s(t)\}$ and $\{w(t)\}$ are related by the strictly stable system $G(q)$ and the input for $t<0$ unknown but obeying $|w(t)|\le C_w$ for all $t$, one has
+  \begin{equation}
+    \label{eq:filtered-periodogram-estimate}
+    S_N(w) = G(e^{i\omega})W_N(w) + R_N(w)
+  \end{equation}
+  where
+  \begin{equation}
+    \label{eq:estimate-transient}
+    |R_N(w)| \le 2C_w\frac{C_G}{\sqrt{N}},\hspace{2em} C_G = \sum_{k=1}^\infty k|g(k)|
+  \end{equation}
+  $R_N$ is \emph{not} the transient response.
 
-This is defined for or a random signal
+  This is defined for or a random signal
 
-\begin{equation*}
-  \frac{1}{N}\left|V_N(\ejw)\right|^2
-\end{equation*}
-is an asymptotically unbiased estimator of the spectrum
-\begin{equation*}
-  \lim_{N\rightarrow \infty} \EE{\frac{1}{N} \left|V_N(\ejw)\right|^2} = \phi_v(\omega)
-\end{equation*}
-under the assumption that the autocorrelation decays quickly enough
-\begin{equation*}
-  \lim_{N\rightarrow \infty} \frac{1}{N} \sum_{\tau=-N}^N |\tau R_v(\tau)| = 0
-\end{equation*}
+  \begin{equation*}
+    \frac{1}{N}\left|V_N(\ejw)\right|^2
+  \end{equation*}
+  is an asymptotically unbiased estimator of the spectrum
+  \begin{equation*}
+    \lim_{N\rightarrow \infty} \EE{\frac{1}{N} \left|V_N(\ejw)\right|^2} = \phi_v(\omega)
+  \end{equation*}
+  under the assumption that the autocorrelation decays quickly enough
+  \begin{equation*}
+    \lim_{N\rightarrow \infty} \frac{1}{N} \sum_{\tau=-N}^N |\tau R_v(\tau)| = 0
+  \end{equation*}
 \fi
 
 %%% Local Variables:
