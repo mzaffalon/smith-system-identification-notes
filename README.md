@@ -14,3 +14,4 @@ Suggestions and PRs are welcome.
 - 2023-12-22: added personal solutions to the final exam
 - 2024-01-02: added frequency domain analysis
 - 2024-01-08: added time domain analysis
+- 2024-01-15: added subspace identification

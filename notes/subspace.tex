@@ -1,0 +1,348 @@
+\chapter{Subspace Identification}
+\label{chap:subspace-identification}
+
+Subspace identification aims at constructing a state space representation
+\begin{equation}
+  \label{eq:state-space-representation}
+  \begin{aligned}
+    x(k+1) &= Ax(k) + Bu(k) & \hspace{2em} & A \in \RR^{n_x\times n_x} \\
+    y(k) &= Cx(k) + Du(k) & & D \in \RR^{n_y\times n_u}
+  \end{aligned}
+\end{equation}
+from the (time- or frequency-domain) data. $n_x$, $n_u$ and $n_y$ are the number of states, control inputs and outputs. This approach handles also MIMO systems and use only linear algebra.
+
+The subspace identification method presented in this chapter makes use of the identity in the frequency-domain
+\begin{equation*}
+  G(\ejw) = C\left(\ejw \II - A\right)^{-1}B + D\hspace{2em} G(\ejw) \in \RR^{n_y\times n_u}
+\end{equation*}
+where for the estimates, we require \emph{consistency}
+\begin{equation*}
+  \begin{aligned}
+    \lim_{N\rightarrow \infty} \text{Prob} & \left\{\left|\left|\hat{G}(\ejwn) - G(\ejwn) \right|\right|_\infty > \delta\right\} = 0 \\
+                                           & \forall \delta>0 \text{ and } \forall n=0,\cdots,N-1
+  \end{aligned}
+\end{equation*}
+on a uniform grid of frequencies $\omega_n$. We also require \emph{correctness}, that the algorithms produce the true model if the noise is zero given a finite amount of data $M$~\cite{mckelvey}.
+
+In constructing the matrix $\hat{A}$, the number of states $n_x$ is, in general, not known in advance since they may all not be measurable and may be unphysical; on the other hand, prior knowledge of the system, when available, must be used. A second issue for state-stace representation arised from the fact that the matrices are not unique, and only related by a non-singular transformation\footnote{Given the transformation $T$, the two systems described by
+  \begin{equation*}
+    A,\ B,\ C,\ D
+  \end{equation*}
+  and
+  \begin{equation*}
+    \tilde{A}\doteq T^{-1}AT,\ \tilde{B}\doteq TB,\ \tilde{C}\doteq CT,\ \tilde{D}\doteq D
+  \end{equation*}
+  have the same input-output behavior
+  \begin{equation*}
+    C(z\II - A)B + D.
+  \end{equation*}}.
+
+In the time-domain, the pulse response coefficients for a causal system\footnote{The time-domain $g(k)$ and the frequency-domain transfer function $G(\ejw)$ are related as usual by the Fourier transform
+  \begin{equation*}
+    G(\ejw) = \sum_{k=0}^\infty g(k)e^{-j\omega k}\hspace{2em} 0 \leq \omega \leq \pi.
+  \end{equation*}
+} are given by
+\begin{equation}
+  \label{eq:pulse-response-coefficients}
+  g(k) =
+  \begin{cases}
+    0 & k < 0 \\
+    D & k = 0 \\
+    CA^{k-1}B & k > 0
+  \end{cases}
+\end{equation}
+
+The observability and controllability matrices play an important role in subspace identification. The (extended) observability matrix is
+\begin{equation*}
+  \mathcal{O}_q \doteq
+  \begin{bmatrix}
+    C \\ CA \\ \vdots \\ CA^{q-1}
+  \end{bmatrix} \in \RR^{n_yq \times n_x}
+\end{equation*}
+is a tall matrix since $n_yq \geq n_x$. A system is \emph{observable} if for every $T>0$ it is possible to determine the state of the system $x(T)$ through measurements of $y(t)$ and $u(t)$ on the interval $[0, T]$~\cite[Sect.~8]{fbs}. If $\rank{\mathcal{O}_q}=n_x$, the matrix has full column rank and the system is observable.
+
+The extended controllability/reachability matrix
+\begin{equation*}
+  \mathcal{C}_r \doteq
+  \begin{bmatrix}
+    B & AB & \cdots & A^{r-1}B
+  \end{bmatrix} \in \RR^{n_x \times n_ur}
+\end{equation*}
+where $n_ur\times n_x$ is a fat matrix. A system is \emph{reachable} if there exists a $T$ and a sequence of inputs that brings the initial state $x_0$ into the final state $x_f$. If $\rank{\mathcal{C}_r}=n_x$, the matrix has full row rank and the system is controllable.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Subspace Identification using the Hankel Matrix}
+\label{sec:subspaces-hankel}
+
+The algorithm described in~\cite{mckelvey} assumes an observable system (\textit{i.e.} $\mathcal{O}_q$ has full column rank) and consists of the following steps:
+\begin{enumerate}
+\item compute the time-alised estimate of the pulse response $\hat{h}_k$ from the estimated frequency response $\hat{G}(\ejwn)$;
+\item constructs the Hankel matrix $\hH$;
+\item compute a singular value decomposition of $\hH$ and select the state space order $\hat{n}_x$;
+\item estimate the state space matrices $\hat{A}$, $\hat{B}$, $\hat{C}$ and $\hat{D}$.
+\end{enumerate}
+As for the notations: $\mathcal{H}$ is the Hankel matrix for noise-free data and is exactly constructed from the real $A$, $B$, $C$ and $D$; $\hH$ is the Hankel matrix constructed from noisy data from which the estimates $\hat{A}$, $\hat{B}$, $\hat{C}$ and $\hat{D}$ are computed.
+
+\subsubsection{Step 1: Construct $\hat{h}_k$}
+
+Starting from uniformly spaced data for $\hat{G}(\ejwn)$, compute the time-alised estimate of the pulse response using the inverse DFT
+\begin{equation*}
+  \hat{h}_k = \frac{1}{N} \sum_{n=0}^{N-1} \hat{G}(\ejwn) e^{j2\pi kn/N},\hspace{1em}k = 0,\ldots , N-1.
+\end{equation*}
+The time-aliased response is also given by\footnote{Using the alised pulse response and eq.~\eqref{eq:pulse-response-coefficients}
+  \begin{equation*}
+    h_k \doteq \sum_{l=0}^\infty g(k+Nl) = CA^{k-1} \left(\sum_{l=0}^\infty A^{Nl}\right) B = CA^{k-1} \left(I - A^N\right)^{-1}B
+  \end{equation*}}
+\begin{equation*}
+  h_k \doteq \sum_{l=0}^\infty g(k+Nl) = CA^{k-1} \left(\II - A^N\right)^{-1}B
+\end{equation*}
+provided all eigenvalues of $A$ are strictly inside the unit circle, $\rho(A)<1$. For a MIMO system, $\hat{h}_k \in \RR^{n_y\times n_u}$. If $N \geq \taumax$, the aliasing effect is small and the term $A^N = 0$.
+
+\subsubsection{Step 2: Construct $\hH$}
+% \label{sec:construct-Hankel}
+
+Assemble the block\footnote{Block because the underlaying system may be a MIMO.} Hankel matrix with equal elements on the skew diagonal
+\begin{equation*}
+  \hH =
+  \begin{bmatrix}
+    \hat{h}_1 & \hat{h}_2 & \hat{h}_3 & \cdots & \hat{h}_r \\
+    \hat{h}_2 & \hat{h}_3 & \ddots & & \hat{h}_{r+1} \\
+    \hat{h}_3 & \ddots & & & \\
+    \cdots & & & & \vdots \\
+    \hat{h}_q & \hat{h}_{q+1} & & \cdots & \hat{h}_{q+r-1}
+  \end{bmatrix} \in \RR^{n_yq \times n_ur}
+\end{equation*}
+where $q>n_x$, $r>n_x$ and $q+r-1\leq N-1$. The matrix does not need to be square, although a square matrix has better numerical properties. The matrix can be factored out in terms of the observability and controllability matrices\footnote{The equivalency can be seen using the property that A commutes with $I-A^N$: for instance
+  \begin{equation*}
+    h_3 = [\mathcal{H}]_{22} = CA \left(I-A^N\right)^{-1}AB = CA^2 \left(I-A^N\right)^{-1}B.
+  \end{equation*}}
+\begin{equation*}
+  \mathcal{H} = \mathcal{O}_q \left(I - A^N\right)^{-1} \mathcal{C}_r.
+\end{equation*}
+
+\subsubsection{Step 3: Compute the SVD of $\hH$}
+
+The singular value decomposition of $\hH$ gives
+\begin{equation*}
+  \hH =
+  \begin{bmatrix}
+    \hat{U}_1 & \hat{U}_2
+  \end{bmatrix}
+  \begin{bmatrix}
+    \hat{\Sigma}_1 & 0 \\ 0 & \hat{\Sigma}_2
+  \end{bmatrix}
+  \begin{bmatrix}
+    \hat{V}_1^\top \\ \hat{V}_2^\top
+  \end{bmatrix}
+\end{equation*}
+In the noise-free case, the rank of $\mathcal{H}$ is $n_x$ since $\mathcal{H}$ is the product of matrices of rank $n_x$: $\hat{\Sigma}_1\in \RR^{n_x\times n_x}$ and $\hat{\Sigma}_2=0$.
+
+In the presence of noise, $\hH$ becomes full rank and one must select the state space size $\hat{n}_x$ such that $\Sigma_1 \in \RR^{\hat{n}_x\times \hat{n}_x}$. One way of estimating $\hat{n_x}$ is corresponding to the singular value with the largest drop although this is not always clear. Cross-validation is also a possible approach if the tional data is available.
+
+
+\subsubsection{Step 4: Estimate the state-space matrices}
+
+Approximating $\hat{\Sigma}_2=0$, from
+\begin{equation*}
+  \hH \approx \hat{U}_1\hat{\Sigma}_1\hat{V}_1\top
+\end{equation*}
+and remembering that $\mathcal{O}_q$ is full column rank (although not orthonormal), we conclude that $\hat{U}_1$ and the estimate $\hat{\mathcal{O}_q}$ are equivalent within a similarity transformation:
+\begin{equation*}
+  \hat{U}_1 = \hat{\mathcal{O}}_qT =
+  \begin{bmatrix}
+    \hat{C}T \\ \hat{C}T\left(T^{-1}\hat{A}T\right) \\ \vdots \\ \hat{C}T\left(T^{-1}\hat{A}T\right)^{q-1}
+  \end{bmatrix}
+  %\begin{bmatrix}
+  %  \tilde{C} \\ \tilde{C}\tilde{A} \\ \vdots \\ \tilde{C}\tilde{A}^{q-1}
+  %\end{bmatrix}
+\end{equation*}
+Since we are just interested in any estimate, for readability I will make the substitutions $CT\rightarrow C$ and $T^{-1}AT \rightarrow A$ in the equation above.
+
+The estimate for $\hat{C}$ can be obtained from the first $n_y\times n_x$ block of $\hat{U}_1$: define
+\begin{equation*}
+  J_3 \doteq
+  \begin{bmatrix}
+    \II_{n_y} & 0_{n_y\times n_y(q-1)}
+  \end{bmatrix}
+\end{equation*}
+and
+\begin{equation*}
+  \hat{C} = J_3\hat{U}_1.
+\end{equation*}
+
+The estimate for $\hat{A}$ can be found by solving a least-squares problem on $\hat{U}_1$: define
+\begin{equation*}
+  \begin{aligned}
+    J_1 & \doteq
+          \begin{bmatrix}
+            \II_{n_y(q-1)} & 0_{n_y(q-1)\times n_y}
+          \end{bmatrix} \\
+    J_2 & \doteq
+          \begin{bmatrix}
+            0_{n_y(q-1)\times n_y} & \II_{n_y(q-1)}
+          \end{bmatrix}
+  \end{aligned}
+\end{equation*}
+and solve for $\hat{A}$
+\begin{equation*}
+  J_1\hat{U}_1\hat{A} = J_2\hat{U}_1.
+\end{equation*}
+
+For the estimates $\hat{B}$ and $\hat{D}$, solve the linear least-squares problem\footnote{In MATLAB, to obtained real-valued $\hat{B}$ and $\hat{D}$, solve the problems
+  \begin{equation*}
+    \begin{bmatrix}
+      \real{\hat{C}\left(\ejwn\II - \hat{A}\right)^{-1}} & \II \\
+      \imag{\hat{C}\left(\ejwn\II - \hat{A}\right)^{-1}} & 0
+    \end{bmatrix}
+    \begin{bmatrix}
+      B \\ D
+    \end{bmatrix} =
+    \begin{bmatrix}
+      \real{\hat{G}(\ejwn)} \\
+      \imag{\hat{G}(\ejwn)}
+    \end{bmatrix}
+  \end{equation*}
+  where the matrices for each frequency $\omega_n$ are stacked one on top of the other.}
+\begin{equation*}
+  \hat{B},\hat{D} = \argmin_{B,D} \sum_{n=0}^{N-1}\left|\left| (\ejwn) - D - \hat{C}\left(\ejwn\II - \hat{A}\right)^{-1}B\right|\right|_F^2
+\end{equation*}
+in the Frobinius norm
+\begin{equation*}
+  ||M||_F^2 = \sum_i\sum_j [M]_{ij}^2.
+\end{equation*}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Nonuniformly-Spaced Frequency Case}
+
+In the frequency domain, eq.~\eqref{eq:state-space-representation} becomes
+\begin{equation*}
+  \begin{aligned}
+    \ejw X(\ejw) &= AX(\ejw) + BU(\ejw) \\
+    Y(\ejw) &= CX(\ejw) + DU(\ejw)
+  \end{aligned}
+\end{equation*}
+For each input
+\begin{equation*}
+  U_i(\ejw) = e_i, \hspace{1em}i=1,\cdots, n_u
+\end{equation*}
+where $e_i$ is the vector with entry 1 at the $i$-th location and zero elsewhere, we define the equations
+\begin{equation*}
+  \begin{aligned}
+    \ejw X_i(\ejw) &= AX_i(\ejw) + BU_i(\ejw) \\
+    Y_i(\ejw) &= CX_i(\ejw) + DU_i(\ejw)
+  \end{aligned}
+\end{equation*}
+where $X_i(\ejw)$ and $Y_i(\ejw)$ are the states and output when $U_i(\ejw)$ is active. Defining
+\begin{equation*}
+  X_c(\ejw) \doteq
+  \begin{bmatrix}
+    X_1(\ejw) & \cdots & X_{n_u}(\ejw)
+  \end{bmatrix}
+\end{equation*}
+and stacking the equations column-wise
+\begin{equation*}
+  \begin{aligned}
+    \ejw X_C(\ejw) &= AX_C(\ejw) + B \\
+    G(\ejw) &= CX_C(\ejw) + D
+  \end{aligned}
+\end{equation*}
+By multiplying the second equation by $\ejw$ and using the first one, one obtains
+\begin{equation*}
+  \ejw G(\ejw) = CAX_C(\ejw) + CB + D\ejw.
+\end{equation*}
+Repeating this operation, one obtains
+\begin{equation*}
+  \begin{bmatrix}
+    G(\ejw) \\ \ejw G(\ejw) \\ \vdots \\ e^{j(q-1)\omega} G(\ejw)
+  \end{bmatrix} =
+  \underbrace{\begin{bmatrix}
+    C \\ CA \\\vdots \\ CA^{q-1}
+  \end{bmatrix}}_{\doteq \mathcal{O}} X_C(\ejw) + \Gamma
+\begin{bmatrix}
+  \II_{n_u} \\ \ejw \II_{n_u} \\ \vdots \\ e^{j(q-1)\omega} \II_{n_u}
+\end{bmatrix}
+\end{equation*}
+with
+\begin{equation*}
+  \Gamma \doteq
+  \begin{bmatrix}
+    D & 0 & \cdots & & 0 \\
+    CB & D & 0 & \cdots & 0 \\
+    CAB & CB & \ddots \\
+    \vdots & \ddots \\
+    CA^{q-2}B & & \cdots & CB & D
+  \end{bmatrix}
+\end{equation*}
+unknown, is the matrix of impulse responses, this time starting with $g_0=D$. For each of the $N$ available frequencies $\omega_n$ (non necessarily uniformly spaced), stacking the results above column-wise, one obtains
+\begin{equation}
+  \label{eq:subpace-indentification-nonuniformly}
+  \mathcal{G} = \mathcal{O}\mathcal{X}_C + \Gamma \mathcal{W}
+\end{equation}
+where
+\begin{align*}
+  \mathcal{G} &\doteq \frac{1}{\sqrt{N}}
+  \begin{bmatrix}
+    G(e^{j\omega_1}) & \cdots & G(e^{j\omega_N}) \\
+    e^{j\omega_1}G(e^{j\omega_1}) & \cdots & e^{j\omega_N}G(e^{j\omega_N}) \\
+    \vdots & & \vdots \\
+    e^{j(q-1)\omega_1}G(e{j\omega_1}) & \cdots & e^{j(q-1)\omega_N}G(e{j\omega_N})
+  \end{bmatrix} \\
+  \mathcal{W} &\doteq \frac{1}{\sqrt{N}}
+                \begin{bmatrix}
+                  \II & \cdots & \II \\
+                  e^{j\omega_1} \II & \cdots & e^{j\omega_N} \II \\
+                  \vdots & & \vdots \\
+                  e^{j(q-1)\omega_1} \II & \cdots & e^{j(q-1)\omega_N} \II
+                \end{bmatrix} \\
+  \mathcal{X}_C &\doteq \frac{1}{\sqrt{N}}
+                  \begin{bmatrix}
+                    X_C(e^{j\omega_1}) & \cdots & X_C(e^{j\omega_N})
+                  \end{bmatrix}
+\end{align*}
+The equation can be split into real and imaginary parts:
+\begin{align*}
+  \underbrace{\begin{bmatrix}
+    \real{G} & \imag{G}
+  \end{bmatrix}}_{\mathcal{G}_r} &= \mathcal{O}
+  \underbrace{\begin{bmatrix}
+    \real{\mathcal{X}_C} & \imag{\mathcal{X}_C}
+  \end{bmatrix}}_{\mathcal{X}_Cr} \\
+             &+ \Gamma
+  \underbrace{\begin{bmatrix}
+    \real{\mathcal{W}} & \imag{\mathcal{W}}
+  \end{bmatrix}}_{\mathcal{W}_r}
+\end{align*}
+Since $\mathcal{W}_r$ is a fat matrix, if $n_yq < n_ur$, there exists a nullspace
+\begin{equation*}
+  \mathcal{W}^\perp_r = \II - \mathcal{W}^\top_r\left(\mathcal{W}_r\mathcal{W}^\top_r\right)^{-1}\mathcal{W}_r
+\end{equation*}
+such that $\mathcal{W}_r\mathcal{W}^\perp_r = 0$. This can be used to multiply from the right to get rid of the unknown $\Gamma$
+\begin{equation*}
+  \mathcal{G}_r\mathcal{W}^\perp_r = \mathcal{O}\mathcal{X}_{Cr}\mathcal{W}^\perp_r.
+\end{equation*}
+$\mathcal{G}_r\mathcal{W}^\perp_r$ is the equivalent of the Hankel matrix for the uniformly spaced frequency response, on which to perform the SVD and extract the estimates $\hat{A}$, $\hat{B}$, $\hat{C}$ and $\hat{D}$.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Summary}
+
+Subspace identification is a popular model with the following advantages:
+\begin{itemize}
+\item time- and frequency-domain versions available: N4SID, \textit{etc};
+\item many variants which depend on weighting for noise;
+\item gives a state-space model directly;
+\item can be effective in determining system order;
+\item works equally well for MIMO systems;
+\end{itemize}
+and disadvantages:
+\begin{itemize}
+\item unusual noise weighting in frequency-domain case;
+\item truncated SVD reconstructions are not Hankel;
+\item $\hat{U}_1$ does not have the ``shift'' structure;
+\item least-squares noise assumptions are not correct.;
+\item can give unstable models for stable systems.
+\end{itemize}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "notes"
+%%% End:

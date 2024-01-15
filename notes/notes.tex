@@ -1,3 +1,4 @@
+
 % Intended LaTeX compiler: pdflatex
 \documentclass[11pt]{report}
 \usepackage[utf8]{inputenc}
@@ -25,7 +26,6 @@
 \newcommand{\du}{\ensuremath{\mathrm{d}}}
 % \newcommand{\bs}[1]{\boldsymbol{#1}}
 % \newcommand{\bsrm}[1]{\boldsymbol{\mathrm{#1}}}
-\newcommand{\II}{I}
 
 \newcommand{\EE}[1]{\mathbb{E}\left\{#1\right\}}
 \newcommand{\cov}[1]{\textrm{cov}\left(#1\right)}
@@ -33,15 +33,21 @@
 \newcommand{\MSE}[1]{\textrm{MSE}\left(#1\right)}
 \newcommand{\tr}[1]{\textrm{tr}\left(#1\right)}
 \newcommand{\rank}[1]{\textrm{rank}\left(#1\right)}
+\newcommand{\real}[1]{\textrm{real}\left(#1\right)}
+\newcommand{\imag}[1]{\textrm{imag}\left(#1\right)}
 \newcommand{\thetaLS}{\hat{\theta}_\textrm{LS}}
 \newcommand{\thetaJS}{\hat{\theta}^\textrm{JS}}
 \newcommand{\thetaR}{\hat{\theta}^\textrm{R}}
+\newcommand{\II}{\mathbb{I}}
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\hH}{\hat{\mathcal{H}}}
 
 \newcommand{\taumax}{\tau_\text{max}}
 \newcommand{\ejw}{e^{j\omega}}
 \newcommand{\ejwn}[1][]{e^{j\omega_n#1}}
 \newcommand{\emjwn}[1][]{e^{-j\omega_n#1}}
 
+\DeclareMathOperator*{\argmin}{argmin}
 
 \addbibresource{notes.bib}
 
@@ -50,14 +56,13 @@
 \maketitle
 \tableofcontents
 
-% \include{stats}
 \include{LS}
 \include{regularization}
 \include{freq-domain}
 \include{time-domain}
 \include{PEM}
 \include{closedloop}
-\include{state-space}
+\include{subspace}
 
 \printbibliography
 

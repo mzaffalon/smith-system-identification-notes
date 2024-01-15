@@ -32,7 +32,7 @@ In the rest, we shall be considering the (SISO) linear model
   \label{eq:linear-model-z}
   y(k) = G(z)u(k) + H(z)e(k)
 \end{equation}
-where $y,u \in \mathcal{R}$, $e \in \mathcal{N}(0,\sigma^2)$ is the Gaussian uncorrelated independent and identically distributed (i.i.d.) noise with zero mean and variance $\sigma^2$ and $v(k) = H(z)e(k)$ the filtered noise.
+where $y,u \in \RR$, $e \in \mathcal{N}(0,\sigma^2)$ is the Gaussian uncorrelated independent and identically distributed (i.i.d.) noise with zero mean and variance $\sigma^2$ and $v(k) = H(z)e(k)$ the filtered noise.
 
 We wish to estimate $\hat{G}$ from the finite set of measurements
 \begin{equation*}
@@ -44,9 +44,9 @@ of length $K$. The different methods
 \item real-rational transfer function in the time domain\footnote{
     This holds for the frequency and the time approach. Eq.~\eqref{eq:linear-model-z} is parametrized as
     \begin{equation*}
-      y(k) = G(\theta)u(k) + H(\theta)e(k),\hspace{1em}y \in \mathcal{R},\ u\in \mathcal{R}
+      y(k) = G(\theta)u(k) + H(\theta)e(k),\hspace{1em}y,u \in \mathbb{R}
     \end{equation*}
-    where $\theta \in \mathcal{R}^d$ and $d$ is the model parameter. For real-rational transfer functions in the $z$-domain
+    where $\theta \in \RR^d$ and $d$ is the model parameter. For real-rational transfer functions in the $z$-domain
     \begin{equation}
       %\label{eq:transfer-function-parametrization}
       G(z) = \frac{b_1z^{-1} + b_2z^{-2} + \ldots + b_mz^{-m}}{1 + a_1z^{-1} + \ldots + a_mz^{-n}}
@@ -69,7 +69,7 @@ of length $K$. The different methods
       y(k) &= Cx(k) + Du(k)
     \end{aligned}
   \end{equation*}
-  Chap.~\ref{chap:state-space}.
+  Chap.~\ref{chap:subspace-identification}.
 \end{itemize}
 are equivalent in the absence of noise. For all methods, the \emph{unmeasured} past induces an error in the estimate because for a causal system, the signal $y(k)$ depends on the control inputs at previous times up to time $k$ which may all not be available. The problem does not arise when the system starts at rest where $u(k)=y(k)=0,\ \forall k<0$.
 

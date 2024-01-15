@@ -10,7 +10,7 @@ Consider the model
 \end{equation}
 where $\tilde{Y} = \begin{bmatrix}
   y_0 & \ldots && y_{N-1}
-\end{bmatrix}^\top$ is a vector containing the measurements $\{y_0,\ldots, y_{N-1}\}$, $\tilde{\Phi}\in \mathbb{R}^{N\times p}$ is called the \emph{regressor} and $\theta\in\mathbb{R}^p$ is the model parameter to be estimated; $p$ is the model order. The noise vector $\tilde{\epsilon} =
+\end{bmatrix}^\top$ is a vector containing the measurements $\{y_0,\ldots, y_{N-1}\}$, $\tilde{\Phi}\in \RR^{N\times p}$ is called the \emph{regressor} and $\theta\in\RR^p$ is the model parameter to be estimated; $p$ is the model order. The noise vector $\tilde{\epsilon} =
 \begin{bmatrix}
   v_0 & \ldots & v_{N-1}
 \end{bmatrix}^\top$ has zero mean $\EE{\tilde{\epsilon}}=0$ and covariance\footnote{Note also that while the matrix $vv^\top$ has rank 1, the noise covariance matrix $R$ for Gaussian distributed white noise is full rank because it is the sum of random vectors that span the whole space.} $\EE{\tilde{\epsilon}\tilde{\epsilon}^\top}=R$, a symmetric positive definite matrix.
@@ -46,7 +46,7 @@ The \emph{mathematical} solution to eq.~\eqref{eq:LS-problem} is found by settin
   \label{eq:LS-estimator}
   \left(\Phi^\top\Phi\right)^\top \thetaLS = \Phi^\top Y\ \rightarrow\ \thetaLS = \left(\Phi^\top \Phi\right)^{-1} \Phi^\top Y.
 \end{equation}
-The solution exists provided $\Phi$ has full column rank\footnote{The usual warning holds for the rank. Instead we want to have the matrix $\Phi$ with the smallest condition number for the estimate to be numerically stable, which is a stronger condition than full rank.}: $\rank{\Phi} = p$. When this is the case, the system is said to be \emph{persistently excited}, see Sect.. and when given the freedom, one chooses $\Phi$ so that it is well conditioned.
+The solution exists provided $\Phi$ has full column rank\footnote{The usual warning holds for the rank. Instead we want to have the matrix $\Phi$ with the smallest condition number for the estimate to be numerically stable, which is a stronger condition than full rank.}: $\rank{\Phi} = p$. When this is the case, the system is said to be \emph{persistently excited}, see Sect.~\ref{sec:persistency-excitation}, and when given the freedom, one chooses $\Phi$ so that it is well conditioned.
 
 Had we not scaled $\tilde{Y}$ and $\tilde{\Phi}$ by the noise covariance, the solution would have been
 \begin{equation*}
@@ -81,7 +81,7 @@ The linear estimator eq.~\eqref{eq:LS-estimator} is unbiased\footnote{Recalling 
 The covariance\footnote{Is there a way to understand the form of covariance matrix without going through the calculation?}
 \begin{equation}
   \label{eq:covariance-LS}
-  \cov{\thetaLS} = \left(\Phi^\top \Phi\right)^{-1}.
+  \cov{\thetaLS} = \left(\Phi^\top \Phi\right)^{-1} = \left(\tilde{\Phi}^\top R^{-1} \tilde{\Phi}\right)^{-1}.
 \end{equation}
 Lastly, we consider the mean squared error
 \begin{equation*}

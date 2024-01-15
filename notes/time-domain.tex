@@ -21,10 +21,10 @@ which can be written in Toeplitz matrix form as
     y(0) \\ y(1) \\ \vdots \\ y(K-1)
   \end{bmatrix} =
   \begin{bmatrix}
-    u(0) & u(-1) & \ldots & u(-K+1) && \ldots \\
-    u(1) & u(0) & \ldots & u(-K+2) && \ldots \\
+    u(0) & u(-1) & \cdots & u(-K+1) && \cdots \\
+    u(1) & u(0) & \cdots & u(-K+2) && \cdots \\
     \vdots & & \ddots & \vdots \\
-    u(K-1) & u(K-2) & & \ldots & & \hdots
+    u(K-1) & u(K-2) & & \cdots & & \hdots
   \end{bmatrix}
   \begin{bmatrix}
     g(0) \\ g(1) \\ g(2) \\ \vdots
@@ -60,9 +60,9 @@ where the truncation of eq.~\eqref{eq:TD-response-estimation} gives rise to the 
     y(0) \\ \vdots \\ y(K-1)
   \end{bmatrix} =
   \begin{bmatrix}
-    u(0) & \ldots & u(-\taumax) \\
+    u(0) & \cdots & u(-\taumax) \\
     \vdots & \ddots & \vdots \\
-    u(K-1) & \ldots & u(K-\taumax-1)
+    u(K-1) & \cdots & u(K-\taumax-1)
   \end{bmatrix}
   \begin{bmatrix}
     g(0) \\ \vdots \\ g(\taumax)
@@ -71,7 +71,7 @@ where the truncation of eq.~\eqref{eq:TD-response-estimation} gives rise to the 
     e(0) \\ \vdots \\ e(K-1)
   \end{bmatrix}
 \end{align*}
-where $Y,\ E\in \mathcal{R}^K$, $\Phi_u \in \mathcal{R}^{K\times(\taumax+1)}$ and $g \in \mathcal{R}^{\taumax+1}$. Ignoring the error makes the estimate biased: the estimate is however asymptotically unbiased as it can be made arbitrarily small by selecting a larger $\taumax$.
+where $Y,\ E\in \RR^K$, $\Phi_u \in \RR^{K\times(\taumax+1)}$ and $g \in \RR^{\taumax+1}$. Ignoring the error makes the estimate biased: the estimate is however asymptotically unbiased as it can be made arbitrarily small by selecting a larger $\taumax$.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Initial Conditions: Negative Times for $g$}
@@ -82,9 +82,9 @@ The expression eq.~\eqref{eq:TD-response-estimation-matrix} requires the knowled
     y(\taumax) \\ \vdots \\ y(K-1)
   \end{bmatrix} =
   \begin{bmatrix}
-    u(\taumax) & \ldots & u(0) \\
+    u(\taumax) & \cdots & u(0) \\
     \vdots & \ddots & \vdots \\
-    u(K-1) & \ldots & u(K-\taumax-1)
+    u(K-1) & \cdots & u(K-\taumax-1)
   \end{bmatrix}
   \begin{bmatrix}
     g(0) \\ \vdots \\ g(\taumax)
@@ -104,13 +104,13 @@ A bad measurement can be also easily dealt with in the time domain. Let us assum
 y(\taumax) \\ \vdots \\ y(j-1) \\ y(j+1) \\ \vdots \\ y(K-1)
   \end{bmatrix} =
   \begin{bmatrix}
-    u(\taumax) & \ldots & & u(0) \\
+    u(\taumax) & \cdots & & u(0) \\
     \vdots & & & \vdots \\
-    u(j-1) & u(j-2) & \ldots & u(j-\taumax-2) \\
-    %u(j) & u(j-1) & \ldots & u(j-\taumax-1) \\
-    u(j+1) & u(j) & \ldots & u(j-\taumax) \\
+    u(j-1) & u(j-2) & \cdots & u(j-\taumax-2) \\
+    %u(j) & u(j-1) & \cdots & u(j-\taumax-1) \\
+    u(j+1) & u(j) & \cdots & u(j-\taumax) \\
     \vdots & & & \vdots \\
-    u(K-1) & \ldots & & u(K-\taumax-1)
+    u(K-1) & \cdots & & u(K-\taumax-1)
   \end{bmatrix}
   \begin{bmatrix}
     g(0) \\ g(1) \\ \vdots \\ g(\taumax)
@@ -141,11 +141,18 @@ For the solution to be unique, $\Phi_u$ needs to have full column rank. What inp
   \begin{equation*}
     u(k) = \sum_{s=1}^S \alpha_s \cos(\omega_sk + \phi_s)
   \end{equation*}
-  is persistently exciting of order $2S$ if $\omega_s\in (0,\pi)$. The order decreases by 1 if either one of $\omega_s = 0,\pi$ is included and by 2 if both frequencies are included. For periodic signals, $\Phi_u$ is circulant.
+  is persistently exciting of order $2S$ if $\omega_s\in (0,\pi)$. The order decreases by 1 if either one of $\omega_s = 0,\pi$ is included and by 2 if both frequencies are included. For periodic signals, $\Phi_u$ is circulant\footnote{A circulant matrix has the form
+    \begin{equation*}
+      \begin{bmatrix}
+        u(0) & u(N-1) & \cdots & u(1) \\
+        u(1) & u(0) & \cdots & u(2) \\
+        \vdots & & \ddots & \vdots \\
+        u(N-1) & u(N-2) & \cdots & u(0)
+      \end{bmatrix}.
+    \end{equation*}}.
 \end{itemize}
 
 In class (and in \cite[Sect.~13.2]{ljung}) the uniqueness of $\hat{g}$ was discussed in terms of the rank of the auto-correlation matrix $R_u$, but discussion in Moodle indicates that checking for the singular values of $\Phi_u$ is completely equivalent.
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Pulse Response from Cross- and Autocorrelation}
@@ -165,39 +172,20 @@ This is seen by multiplying eq.~\eqref{eq:TD-response-estimation} from the left 
 
 The equivalent expression in the frequency domain was derived in Sect.~\ref{sec:spectral-estimation-methods}.
 
-\iffalse
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Equivalence Between Time and Frequency Domain}
+\section{Equivalence Between Time and Frequency Domain}
 \label{sec:equivalence-time-freq-domain}
 
-Given eq.~\eqref{eq:TD-response-estimation}, the equivalence with the ETFE is established by multiplying by the Fourier transform matrix $F_y$ and $F_g$ (which may have different dimensions but are nevertheless square)
+Given eq.~\eqref{eq:TD-response-estimation}, the equivalence with the ETFE is established by multiplying by the Fourier transform matrices $F_y$ and $F_g$ (which may have different dimensions but are nevertheless square)
+\begin{equation}
+  \label{eq:}
+  F_yY = F_y\Phi_uF_g^{-1}\underbrace{F_gg}_{\doteq G} + F_yV \longrightarrow \hat{G} = \left(F_y\Phi_uF_g^{-1}\right) \backslash \left(F_yY\right)
+\end{equation}
+If the input signal is periodic, $\Phi_u$ is a square circulant matrix: $F_y$ and $F_g$ have the same dimensions and $F_y\Phi_uF_g^{-1}$ is a diagonal matrix. The result above simplifies to
 \begin{equation*}
-  F_yy = F_y\Phi_uF_g^{-1}\underbrace{F_gg}_{\doteq G} + F_yv \longrightarrow \hat{G} = \left(F_y\Phi_uF_g^{-1}\right) \backslash \left(F_yy\right)
+  \hat{G}(\ejwn) = \frac{Y_N(\ejwn)}{U_N(\ejwn)}.
 \end{equation*}
-This to be equal to the standard result
-\begin{equation*}
-\hat{G} = F_g\cdot (\Phi_u \backslash y).
-\end{equation*}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Slowly-Decaying Systems}
-\label{sec:slowly-decaying-systems}
-
-If $N<\taumax$, even in the periodic input case, the time response is aliased.
-
-
-
-In the frequency domain instead, even an aliased estimate gives the correct transfer function $\hat{G}(e^{j\omega_n}) = G(e^{j\omega})|_{\omega=\omega_n}$.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Non-Periodic Frequency Domain Estimation}
-
-The estimate is unbiased only when $N>\taumax$, that is when the transient has died out
-\begin{equation*}
-  \hat{G}(e^{j\omega_n}) = G_0(e^{j\omega_n}) + X_u^{-1}\left[V((e^{j\omega_n})) + R((e^{j\omega_n}))\right]
-\end{equation*}
-\fi
 
 %%% Local Variables:
 %%% mode: latex
