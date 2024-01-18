@@ -10,7 +10,7 @@ of the least squares problem is unbiased. We can however choose to have a biased
   \label{eq:regularized-LS}
   ||Y-\Phi \theta||_2^2 + \gamma \theta^\top P^{-1}\theta
 \end{equation}
-where $\gamma P^{-1}$ is a positive definite matrix. $P$ is called the \emph{kernel} or the regularization matrix\footnote{When $P=\mathbb{I}_N$ the technique is called ridge regression, otherwise it goes under the name of Tikhonov regularization. Compared to the ridge regression which only tries to decrease $||\theta||^2$, the Tikhonov regularization can use information about the system, see Sect.~\ref{sec:regularization-matrices}.}.
+where $\gamma P^{-1}$ is a positive definite matrix. $P$ is called the \emph{kernel} or the regularization matrix\footnote{When $P=\II_N$ the technique is called ridge regression, otherwise it goes under the name of Tikhonov regularization. Compared to the ridge regression which only tries to decrease $||\theta||^2$, the Tikhonov regularization can use information about the system, see Sect.~\ref{sec:regularization-matrices}.}.
 
 Regularization prevents overfitting, reduces the sensitivity to noise and can improve the estimate by a proper choice of the kernel (\textit{e.g.} for instance if the system is known to be stable, this information can be used to improve the estimation.)
 

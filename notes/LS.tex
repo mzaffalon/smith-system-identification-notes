@@ -17,11 +17,11 @@ where $\tilde{Y} = \begin{bmatrix}
 
 The maximum likelihood (ML) probability\footnote{The expectation value of eq.~\eqref{eq:LS-problem} is $N-p$. This can be seen using eq.~\eqref{eq:thetaLS-estimate}
   \begin{equation*}
-    Y-\Phi\thetaLS = (\Phi\theta_0 + e) - \Phi\left(\theta_0 + K \Phi^\top e\right) = \left(I - \Phi K \Phi^\top\right)e.
+    Y-\Phi\thetaLS = (\Phi\theta_0 + e) - \Phi\left(\theta_0 + K \Phi^\top e\right) = \left(\II - \Phi K \Phi^\top\right)e.
   \end{equation*}
   The average
   \begin{equation*}
-    \EE{\left|\left|Y - \Phi \thetaLS\right|\right|_2^2} = \EE{e^\top\left(I - \Phi K \Phi^\top\right)^\top\left(I - \Phi K \Phi^\top\right)e} = \EE{e^\top\left(I - \Phi K \Phi^\top\right)e}.
+    \EE{\left|\left|Y - \Phi \thetaLS\right|\right|_2^2} = \EE{e^\top\left(\II - \Phi K \Phi^\top\right)^\top\left(\II - \Phi K \Phi^\top\right)e} = \EE{e^\top\left(\II - \Phi K \Phi^\top\right)e}.
   \end{equation*}
   The term $\EE{e^\top e}$ evaluates to $N$. The other term evaluates to $p$: using $\Phi = U\Sigma V^\top$,
   \begin{equation*}
@@ -69,16 +69,20 @@ The linear estimator eq.~\eqref{eq:LS-estimator} is unbiased\footnote{Recalling 
     \label{eq:thetaLS-estimate}
     \thetaLS = K\Phi^\top (\Phi\theta_0 + e) = \theta_0 + K\Phi^\top e
   \end{equation}
-  from which $\EE{\thetaLS} = \theta_0$ since $\EE{e}=0$. Moreover
+  from which $\EE{\thetaLS} = \theta_0$ since $\EE{e}=0$.} (but see also Sect.~\ref{sec:estimation-bias}):
+\begin{equation*}
+  \EE{\thetaLS} = \theta_0.
+\end{equation*}
+The covariance\footnote{With the notation above
   \begin{align*}
     \cov{\thetaLS} &\doteq \EE{\left(\thetaLS - \EE{\thetaLS}\right) \left(\thetaLS - \EE{\thetaLS}\right)^\top} \\
                    &= \EE{\left(K \Phi^\top e\right) \left(K \Phi^\top e\right)^\top} \\
                    &= \EE{K \Phi^\top e e^\top \Phi K} = K \Phi^\top \EE{ee^\top} \Phi K = K.
-  \end{align*}} (but see also Sect.~\ref{sec:estimation-bias}):
-\begin{equation*}
-  \EE{\thetaLS} = \theta_0.
-\end{equation*}
-The covariance\footnote{Is there a way to understand the form of covariance matrix without going through the calculation?}
+  \end{align*}
+  Note that the covariance is proportional to nothing else than the error induced by $e$ in determining $\thetaLS$: $\delta \thetaLS = K\Phi^\top e$ and
+  \begin{equation*}
+    \cov{\thetaLS} = \EE{\left(\delta \thetaLS\right) \left(\delta \thetaLS\right)^\top}.
+  \end{equation*}}
 \begin{equation}
   \label{eq:covariance-LS}
   \cov{\thetaLS} = \left(\Phi^\top \Phi\right)^{-1} = \left(\tilde{\Phi}^\top R^{-1} \tilde{\Phi}\right)^{-1}.

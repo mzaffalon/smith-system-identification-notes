@@ -9,7 +9,7 @@ Subspace identification aims at constructing a state space representation
     y(k) &= Cx(k) + Du(k) & & D \in \RR^{n_y\times n_u}
   \end{aligned}
 \end{equation}
-from the (time- or frequency-domain) data. $n_x$, $n_u$ and $n_y$ are the number of states, control inputs and outputs. This approach handles also MIMO systems and use only linear algebra.
+from the (time- or frequency-domain) data. $n_x$, $n_u$ and $n_y$ are the number of states, control inputs and outputs. This approach handles also MIMO systems and use only linear algebra\footnote{The approach does not handle linear systems that cannot be described by a rational transfer function: examples of this are linear systems with a time delay $e^{-s\tau}G(s)$ is infinite dimensional or where the state vector belongs to a functions space such as the heating of a rod. [Abdalmoaty Mohamed, private conversation]}.
 
 The subspace identification method presented in this chapter makes use of the identity in the frequency-domain
 \begin{equation*}
@@ -85,18 +85,33 @@ As for the notations: $\mathcal{H}$ is the Hankel matrix for noise-free data and
 
 \subsubsection{Step 1: Construct $\hat{h}_k$}
 
-Starting from uniformly spaced data for $\hat{G}(\ejwn)$, compute the time-alised estimate of the pulse response using the inverse DFT
+The time-aliased response is given by\footnote{Using the alised pulse response and eq.~\eqref{eq:pulse-response-coefficients}
+  \begin{align*}
+    h_k \doteq \sum_{l=0}^\infty g(k+Nl) &= CA^{k-1} \left(\sum_{l=0}^\infty A^{Nl}\right) B \\
+                                         &= CA^{k-1} \left(I - A^N\right)^{-1}B \\
+                                         &= CA^{k-s-1}\left(I - A^N\right)^{-1}A^sB
+  \end{align*}
+  where in the last line, we used the property that $A$ commutes with $I-A^N$.\label{fn:commutation}}
+\begin{equation*}
+  h_k \doteq \sum_{l=0}^\infty g(k+Nl) = CA^{k-s-1}\left(I - A^N\right)^{-1}A^sB
+\end{equation*}
+provided all eigenvalues of $A$ are strictly inside the unit circle, $\rho(A)<1$. For a MIMO system, $\hat{h}_k \in \RR^{n_y\times n_u}$. If $N \geq \taumax$, the aliasing effect is small and the term $A^N = 0$.
+
+The time-aliased estimate $h_k$ can also be computed starting from uniformly spaced data for $\hat{G}(\ejwn)$
+using the inverse DFT
+\footnote{We have
+  \begin{equation*}
+    g(k) = \frac{1}{N}\sum_{i=0}^{N-1} G(\ejwn) e^{j2\pi nk/N}.
+  \end{equation*}
+  Similarly to what done in~\cite{smith-suppl13}
+  \begin{align*}
+    h_k \doteq \sum_{l=0}^\infty g(k+Nl) &= \frac{1}{N} \sum_{n=0}^{N-1} \sum_{l=0}^\infty G(\ejwn) e^{j2\pi (k+Nl)n/N} \\
+                                         &= \frac{1}{N} \sum_{n=0}^{N-1} G(\ejwn) e^{j2\pi kn/N}
+  \end{align*}}
 \begin{equation*}
   \hat{h}_k = \frac{1}{N} \sum_{n=0}^{N-1} \hat{G}(\ejwn) e^{j2\pi kn/N},\hspace{1em}k = 0,\ldots , N-1.
 \end{equation*}
-The time-aliased response is also given by\footnote{Using the alised pulse response and eq.~\eqref{eq:pulse-response-coefficients}
-  \begin{equation*}
-    h_k \doteq \sum_{l=0}^\infty g(k+Nl) = CA^{k-1} \left(\sum_{l=0}^\infty A^{Nl}\right) B = CA^{k-1} \left(I - A^N\right)^{-1}B
-  \end{equation*}}
-\begin{equation*}
-  h_k \doteq \sum_{l=0}^\infty g(k+Nl) = CA^{k-1} \left(\II - A^N\right)^{-1}B
-\end{equation*}
-provided all eigenvalues of $A$ are strictly inside the unit circle, $\rho(A)<1$. For a MIMO system, $\hat{h}_k \in \RR^{n_y\times n_u}$. If $N \geq \taumax$, the aliasing effect is small and the term $A^N = 0$.
+
 
 \subsubsection{Step 2: Construct $\hH$}
 % \label{sec:construct-Hankel}
@@ -112,10 +127,7 @@ Assemble the block\footnote{Block because the underlaying system may be a MIMO.}
     \hat{h}_q & \hat{h}_{q+1} & & \cdots & \hat{h}_{q+r-1}
   \end{bmatrix} \in \RR^{n_yq \times n_ur}
 \end{equation*}
-where $q>n_x$, $r>n_x$ and $q+r-1\leq N-1$. The matrix does not need to be square, although a square matrix has better numerical properties. The matrix can be factored out in terms of the observability and controllability matrices\footnote{The equivalency can be seen using the property that A commutes with $I-A^N$: for instance
-  \begin{equation*}
-    h_3 = [\mathcal{H}]_{22} = CA \left(I-A^N\right)^{-1}AB = CA^2 \left(I-A^N\right)^{-1}B.
-  \end{equation*}}
+where $q>n_x$, $r>n_x$ and $q+r-1\leq N-1$. The matrix does not need to be square, although a square matrix has better numerical properties. The matrix can be factored out in terms of the observability and controllability matrices\footnote{See the last line of footnote~\ref{fn:commutation}.}
 \begin{equation*}
   \mathcal{H} = \mathcal{O}_q \left(I - A^N\right)^{-1} \mathcal{C}_r.
 \end{equation*}
@@ -137,24 +149,30 @@ The singular value decomposition of $\hH$ gives
 \end{equation*}
 In the noise-free case, the rank of $\mathcal{H}$ is $n_x$ since $\mathcal{H}$ is the product of matrices of rank $n_x$: $\hat{\Sigma}_1\in \RR^{n_x\times n_x}$ and $\hat{\Sigma}_2=0$.
 
-In the presence of noise, $\hH$ becomes full rank and one must select the state space size $\hat{n}_x$ such that $\Sigma_1 \in \RR^{\hat{n}_x\times \hat{n}_x}$. One way of estimating $\hat{n_x}$ is corresponding to the singular value with the largest drop although this is not always clear. Cross-validation is also a possible approach if the tional data is available.
+In the presence of noise, $\hH$ becomes full rank and one must select the state space size $\hat{n}_x$ such that $\Sigma_1 \in \RR^{\hat{n}_x\times \hat{n}_x}$.
 
+One way of estimating $\hat{n}_x$ is by selecting the index where the singular values drop significantly. Unfortunately it is not always straightforward. The addition of noise to the matrix $\hH$ makes all of the singular values non-zero and while the noise added to each element of $\hH$ is relatively small, the cumulative effect on the $n_x+1$st singular value can be large~\cite{smith-suppl13}.
+
+Cross-validation is also a possible approach if the additional data is available.
+
+The approximation
+\begin{equation*}
+  \hH \approx \hat{U}_1\hat{\Sigma}_1\hat{V}_1^\top
+\end{equation*}
+suffers from two shortcomings: $\hat{U}_1\hat{\Sigma}_1\hat{V}_1^\top$ is not a Hankel matrix and $\hat{U}_1$ does not generically have the shift\footnote{$\mathcal{O}$ has the shift structure because the block below is equal to the block above multiplied by $A$.} structure~\cite{smith-suppl13}.
 
 \subsubsection{Step 4: Estimate the state-space matrices}
 
-Approximating $\hat{\Sigma}_2=0$, from
-\begin{equation*}
-  \hH \approx \hat{U}_1\hat{\Sigma}_1\hat{V}_1\top
-\end{equation*}
+From $\hH \approx \hat{U}_1\hat{\Sigma}_1\hat{V}_1^\top$
+%\begin{equation*}
+%  \hH \approx \hat{U}_1\hat{\Sigma}_1\hat{V}_1^\top
+%\end{equation*}
 and remembering that $\mathcal{O}_q$ is full column rank (although not orthonormal), we conclude that $\hat{U}_1$ and the estimate $\hat{\mathcal{O}_q}$ are equivalent within a similarity transformation:
 \begin{equation*}
   \hat{U}_1 = \hat{\mathcal{O}}_qT =
   \begin{bmatrix}
     \hat{C}T \\ \hat{C}T\left(T^{-1}\hat{A}T\right) \\ \vdots \\ \hat{C}T\left(T^{-1}\hat{A}T\right)^{q-1}
   \end{bmatrix}
-  %\begin{bmatrix}
-  %  \tilde{C} \\ \tilde{C}\tilde{A} \\ \vdots \\ \tilde{C}\tilde{A}^{q-1}
-  %\end{bmatrix}
 \end{equation*}
 Since we are just interested in any estimate, for readability I will make the substitutions $CT\rightarrow C$ and $T^{-1}AT \rightarrow A$ in the equation above.
 
@@ -208,7 +226,7 @@ For the estimates $\hat{B}$ and $\hat{D}$, solve the linear least-squares proble
 \end{equation*}
 in the Frobinius norm
 \begin{equation*}
-  ||M||_F^2 = \sum_i\sum_j [M]_{ij}^2.
+  ||M||_F^2 = \sum_i\sum_j M_{ij}^2.
 \end{equation*}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -221,29 +239,29 @@ In the frequency domain, eq.~\eqref{eq:state-space-representation} becomes
     Y(\ejw) &= CX(\ejw) + DU(\ejw)
   \end{aligned}
 \end{equation*}
-For each input
+If each input $i$ is driven with a single frequency $\omega$
 \begin{equation*}
   U_i(\ejw) = e_i, \hspace{1em}i=1,\cdots, n_u
 \end{equation*}
-where $e_i$ is the vector with entry 1 at the $i$-th location and zero elsewhere, we define the equations
+where $e_i$ is the vector with entry 1 at the $i$-th location and zero elsewhere, we have the equations
 \begin{equation*}
   \begin{aligned}
     \ejw X_i(\ejw) &= AX_i(\ejw) + BU_i(\ejw) \\
     Y_i(\ejw) &= CX_i(\ejw) + DU_i(\ejw)
   \end{aligned}
 \end{equation*}
-where $X_i(\ejw)$ and $Y_i(\ejw)$ are the states and output when $U_i(\ejw)$ is active. Defining
+where $X_i(\ejw)$ and $Y_i(\ejw)=G_i(\ejw)$ are the states and output when only $U_i(\ejw)$ is active. Defining
 \begin{equation*}
-  X_c(\ejw) \doteq
+  X_C(\ejw) \doteq
   \begin{bmatrix}
     X_1(\ejw) & \cdots & X_{n_u}(\ejw)
   \end{bmatrix}
 \end{equation*}
-and stacking the equations column-wise
+the stacked version of the equation above becomes
 \begin{equation*}
   \begin{aligned}
-    \ejw X_C(\ejw) &= AX_C(\ejw) + B \\
-    G(\ejw) &= CX_C(\ejw) + D
+    \ejw X_C(\ejw) &= AX_C(\ejw) + B\II_{n_u} \\
+    G(\ejw) &= CX_C(\ejw) + D\II_{n_u}
   \end{aligned}
 \end{equation*}
 By multiplying the second equation by $\ejw$ and using the first one, one obtains
@@ -273,7 +291,7 @@ with
     CA^{q-2}B & & \cdots & CB & D
   \end{bmatrix}
 \end{equation*}
-unknown, is the matrix of impulse responses, this time starting with $g_0=D$. For each of the $N$ available frequencies $\omega_n$ (non necessarily uniformly spaced), stacking the results above column-wise, one obtains
+unknown, is the matrix of impulse responses, here starting with $g(0)=D$. For each of the $N$ available frequencies $\omega_n$ (non necessarily uniformly spaced), stacking the results above column-wise, one obtains
 \begin{equation}
   \label{eq:subpace-indentification-nonuniformly}
   \mathcal{G} = \mathcal{O}\mathcal{X}_C + \Gamma \mathcal{W}
